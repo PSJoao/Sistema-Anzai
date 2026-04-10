@@ -1,0 +1,103 @@
+{{!-- views/packing/label.hbs --}}
+
+<style>
+    /* --- Estilos de Visualização na Tela (Preview) --- */
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #333; /* Fundo escuro para destacar */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .label-container {
+        width: 100mm;
+        height: 150mm;
+        background: white;
+        /* Apenas para visualização na tela */
+        box-shadow: 0 0 15px rgba(0,0,0,0.5); 
+    }
+
+    .label-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block; /* Importante para evitar espaços fantasmas */
+    }
+
+    /* --- ESTILOS DE IMPRESSÃO (A MÁGICA ACONTECE AQUI) --- */
+    @media print {
+        @page {
+            size: 100mm 150mm; /* Define tamanho exato do papel */
+            margin: 0;         /* ZERA as margens da impressora */
+        }
+
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100mm;     /* Força largura exata */
+            height: 150mm;    /* Força altura exata */
+            overflow: hidden !important; /* CORTA qualquer pixel excedente */
+            background-color: white;
+            display: block;
+        }
+
+        .label-container {
+            width: 100mm;
+            height: 150mm;
+            margin: 0;
+            padding: 0;
+            display: block;
+            page-break-after: avoid;  /* Evita quebra de página */
+            page-break-inside: avoid;
+            overflow: hidden;         /* Segurança extra */
+        }
+
+        .label-img {
+            width: 100%;
+            height: 100%;
+            display: block;   /* CRUCIAL: Remove o espaço de linha de texto abaixo da imagem */
+            object-fit: fill; /* Força preencher o papel todo */
+            margin: 0;
+            border: none;
+        }
+        
+        /* Remove cabeçalhos e rodapés que o navegador possa tentar inserir */
+        header, footer, nav, .no-print {
+            display: none !important;
+        }
+    }
+</style>
+
+<div class="label-container">
+    {{!-- A imagem vem em Base64 do controller --}}
+    <img src="data:image/png;base64,{{imgBase64}}" id="etiquetaImg" class="label-img" alt="Etiqueta de Envio">
+</div>
+
+<script>
+    window.onload = function() {
+        const img = document.getElementById('etiquetaImg');
+        
+        const doPrint = () => {
+            // Pequeno delay para garantir que o renderizador do navegador montou o layout
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        };
+
+        // Garante que a imagem carregou antes de mandar imprimir
+        if (img.complete) {
+            doPrint();
+        } else {
+            img.onload = doPrint;
+        }
+
+        // Fecha a janela logo após a caixa de diálogo fechar (imprimindo ou cancelando)
+        window.onafterprint = () => {
+             window.close();
+        };
+    };
+</script>

@@ -1,0 +1,70 @@
+<div class="page-header">
+    <div>
+        <h1>Gestão de Utilizadores</h1>
+        <p>Utilizadores registados no sistema.</p>
+    </div>
+    <a href="/admin/users/add" class="btn btn-success">
+        + Adicionar Novo Utilizador
+    </a>
+</div>
+
+{{#if (lookup @root.query "error")}}
+    {{! Se houver um erro na URL (ex: auto-edição) }}
+    <div id="page-feedback" 
+         data-type="error" 
+         data-title="Ação Interrompida" 
+         data-message="{{#if (eq (lookup @root.query "error") "self_delete")}}Não pode eliminar o seu próprio utilizador.
+                     {{else if (eq (lookup @root.query "error") "self_edit_forbidden")}}Não pode editar o seu próprio utilizador através deste painel.
+                     {{else if (eq (lookup @root.query "error") "not_found")}}Utilizador não encontrado.
+                     {{else}}{{lookup @root.query "error"}}{{/if}}">
+    </div>
+
+{{else if (lookup @root.query "success")}}
+    {{! Se houver uma mensagem de sucesso na URL (que acabámos de adicionar no Controller) }}
+    <div id="page-feedback" 
+         data-type="success" 
+         data-title="Sucesso"
+         data-message="Utilizador {{#if (eq (lookup @root.query "success") "create")}}criado{{else}}atualizado{{/if}} com sucesso!">
+    </div>
+{{/if}}
+
+<div class="table-container">
+    <table class="modern-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Cargo</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each users}}
+            <tr>
+                <td>{{this.username}}</td>
+                <td>{{this.role}}</td>
+                <td>
+                    <div class="table-actions">
+                        <a href="/admin/users/edit/{{this.id}}" class="btn btn-outline" id="edit-form">Editar</a>
+                        
+                        {{#if (neq @root.user.id this.id)}}
+                            <form action="/admin/users/delete/{{this.id}}" method="POST"
+                                  class="delete-form"
+                                  data-username="{{this.username}}">
+                                <button type="submit" class="btn btn-danger">
+                                Eliminar
+                                </button>
+                            </form>
+                        {{/if}}
+                    </div>
+                </td>
+            </tr>
+            {{else}}
+            <tr>
+                <td colspan="5">Nenhum utilizador encontrado.</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>
+<br>
+<a href="/dashboard">Voltar ao Dashboard</a>

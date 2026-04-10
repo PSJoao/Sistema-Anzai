@@ -1,0 +1,51 @@
+{{! views/packing/index.hbs }}
+<div class="page-header">
+    <div>
+        <h1>Empacotamento de Pedidos</h1>
+        <p>Selecione um tipo de pedido para iniciar o empacotamento.</p>
+    </div>
+</div>
+
+{{#if error}}
+    <div class="card">
+        <div class="card-body">
+            <div class="form-error">{{error}}</div>
+        </div>
+    </div>
+{{/if}}
+
+<div class="separation-department-grid">
+    {{#if stats.simple}}
+        <article class="card separation-department-card">
+            <div class="card-header">
+                <h3 class="card-title">Pedidos Simples</h3>
+            </div>
+            <div class="card-body">
+                <p>Pedidos com um único produto.</p>
+                <p><strong>Total pendente:</strong> {{stats.simple}}</p>
+            </div>
+            <footer class="card-footer">
+                <a href="/empacotamento/estacao/simple" class="btn btn-primary">Iniciar Empacotamento</a>
+            </footer>
+        </article>
+    {{/if}}
+
+    {{#if stats.kit}}
+        <article class="card separation-department-card">
+            <div class="card-header">
+                <h3 class="card-title">Kits (Pedidos Múltiplos)</h3>
+            </div>
+            <div class="card-body">
+                <p>Pedidos com 2 ou mais produtos diferentes.</p>
+                <p><strong>Total pendente:</strong> {{stats.kit}}</p>
+            </div>
+            <footer class="card-footer">
+                <a href="/empacotamento/estacao/kit" class="btn btn-primary">Iniciar Empacotamento</a>
+            </footer>
+        </article>
+    {{/if}}
+
+    {{#unless (or stats.simple stats.kit)}}
+         <p class="muted">Nenhum pedido separado aguardando empacotamento no momento.</p>
+    {{/unless}}
+</div>

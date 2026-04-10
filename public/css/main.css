@@ -1,0 +1,2365 @@
+/* ================================================================
+  FILE: /public/css/base/_variables.css
+  Descrição: Define todas as "variáveis" de design (cores,
+  fontes, sombras, etc.) para fácil manutenção.
+================================================================
+*/
+:root {
+    /* Paleta de Cores */
+    --primary-color: #3457D5;   
+    --primary-dark: #2a48b8;     
+    --primary-light: #eBF0FF;   
+
+    --secondary-color: #E53935; 
+    --secondary-dark: #C62828;   
+
+    /* Neutros */
+    --text-primary: #1F2937;     
+    --text-secondary: #4B5563;   
+    --border-color: #E5E7EB;    
+    --bg-color: #F3F4F6;         
+    --surface-color: #FFFFFF;    
+
+    /* Feedback */
+    --success-color: #10B981;    
+    --warning-color: #F59E0B;   
+    --error-color: var(--secondary-color); 
+
+    /* Tipografia */
+    --font-family: 'Nunito', sans-serif;
+
+    /* Medidas */
+    --header-height: 70px;
+    --border-radius-sm: 4px;
+    --border-radius: 8px;
+    --border-radius-lg: 16px;
+
+    /* Sombras (Shadows) */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    /* Transições */
+    --transition-fast: all 0.2s ease-in-out;
+    --transition-base: all 0.3s ease-in-out;
+}
+
+
+/* ================================================================
+  FILE: /public/css/base/_reset.css
+  Descrição: Normaliza os estilos padrões do navegador.
+================================================================
+*/
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font: inherit;
+}
+
+img, picture, video, canvas, svg {
+    display: block;
+    max-width: 100%;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul, ol {
+    list-style: none;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+
+/* ================================================================
+  FILE: /public/css/base/_base.css
+  Descrição: Estilos globais (tags HTML, tipografia).
+================================================================
+*/
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.25rem; }
+p { margin-bottom: 1rem; color: var(--text-secondary); }
+
+a {
+    color: var(--primary-color);
+    font-weight: 600;
+    transition: var(--transition-fast);
+}
+
+a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+/* O 'body' do Handlebars é o nosso container principal */
+.main-content {
+    padding: 1.5rem;
+    /* Adiciona padding para compensar o header fixo */
+    padding-top: calc(var(--header-height) + 1.5rem);
+}
+
+/* Container de layout */
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+
+/* ================================================================
+  FILE: /public/css/components/_header.css
+  Descrição: Estilos do Header/Navegação (Mobile e Desktop).
+================================================================
+*/
+.main-header {
+    height: var(--header-height);
+    width: 100%;
+    background-color: var(--surface-color);
+    box-shadow: var(--shadow-md);
+    padding: 0 1.5rem;
+    
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    /* Fixo no topo */
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo-container img {
+    height: 45px; /* Ajuste a altura do logo */
+}
+
+/* Navegação Desktop */
+.main-nav {
+    display: none; /* Escondido em mobile */
+}
+
+.main-nav ul {
+    display: flex;
+    gap: 2rem;
+}
+
+.main-nav a {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-decoration: none;
+    position: relative;
+    padding: 0.5rem 0;
+}
+
+/* Linha azul sublinhada */
+.main-nav a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary-color);
+    transform: scaleX(0);
+    transition: var(--transition-fast);
+    transform-origin: left;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+    color: var(--primary-color);
+}
+
+.main-nav a:hover::after,
+.main-nav a.active::after {
+    transform: scaleX(1);
+}
+
+/* Botão do Menu Mobile*/
+.mobile-menu-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    top: 20px;
+    right: 20px;
+    display: block; /* Visível em mobile */
+    z-index: 1100; /* <- (1100) MAIS ALTO que o menu (1050) */
+    position: fixed;
+}
+
+.mobile-menu-toggle .icon-bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: var(--text-primary);
+    margin: 5px 0;
+    transition: var(--transition-base);
+}
+
+/* Navegação Mobile (Overlay) */
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.65); /* Branco com 85% de opacidade */
+    backdrop-filter: blur(10px); /* Efeito "vidro fosco" */
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-100%);
+    transition: var(--transition-base);
+    z-index: 1050;
+}
+
+.mobile-nav.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.mobile-nav ul {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.mobile-nav a {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.mobile-nav a.active,
+.mobile-nav a:hover {
+    color: var(--primary-color);
+}
+
+/* Animação do Hamburger para 'X' */
+.mobile-menu-toggle.open .icon-bar:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 6px);
+}
+.mobile-menu-toggle.open .icon-bar:nth-child(2) {
+    opacity: 0;
+}
+.mobile-menu-toggle.open .icon-bar:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -6px);
+}
+
+/* Media Query para mostrar nav desktop e esconder mobile */
+@media (min-width: 768px) {
+    .main-nav {
+        display: block;
+    }
+    .mobile-menu-toggle {
+        display: none;
+    }
+}
+
+
+/* ================================================================
+  FILE: /public/css/components/_buttons.css
+  Descrição: Estilos para todos os botões.
+================================================================
+*/
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn:hover {
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Botão Primário (Azul) */
+.btn-primary {
+    background-color: var(--primary-color);
+    color: #FFF;
+}
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    color: #FFF;
+}
+
+/* Botão de Perigo (Vermelho) */
+.btn-danger {
+    background-color: var(--secondary-color);
+    color: #FFF;
+}
+.btn-danger:hover {
+    background-color: var(--secondary-dark);
+    color: #FFF;
+}
+
+/* Botão de Sucesso (Verde) */
+.btn-success {
+    background-color: var(--success-color);
+    color: #FFF;
+}
+.btn-success:hover {
+    background-color: darken(var(--success-color), 10%);
+    color: #FFF;
+}
+
+/* Botão Secundário (Contorno) */
+.btn-outline {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+.btn-outline:hover {
+    background-color: var(--primary-color);
+    color: #FFF;
+}
+
+/* Botão de Texto (Link) */
+.btn-link {
+    background: none;
+    color: var(--primary-color);
+    padding: 0;
+}
+.btn-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* ================================================================
+  FILE: /public/css/components/_forms.css
+  Descrição: Estilos para formulários, inputs, selects, etc.
+================================================================
+*/
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+/* Inputs, Textarea, Select */
+.form-control {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--surface-color);
+    transition: var(--transition-fast);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    /* Sombra de foco azul */
+    box-shadow: 0 0 0 3px rgba(52, 87, 213, 0.2);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Checkbox e Radio */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-check-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.form-check-input {
+    height: 1.25em;
+    width: 1.25em;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    accent-color: var(--primary-color); /* Estiliza o 'check' */
+}
+
+input[type="checkbox"].form-check-input {
+    border-radius: var(--border-radius-sm);
+}
+input[type="radio"].form-check-input {
+    border-radius: 50%;
+}
+
+
+/* Filtros e Pesquisa */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap; /* Para responsividade */
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+/* Campo de Pesquisa com Ícone */
+.form-search {
+    position: relative;
+    flex-grow: 1; /* Ocupa espaço disponível */
+    min-width: 250px;
+}
+
+.form-search .form-control {
+    padding-left: 2.75rem;
+}
+
+.form-search .search-icon {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none; /* Permite clicar no input */
+}
+
+/* Container de Erro */
+.form-error {
+    padding: 1rem;
+    background-color: #FFF1F1;
+    border: 1px solid var(--secondary-color);
+    color: var(--secondary-dark);
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+}
+
+
+/* ================================================================
+  FILE: /public/css/components/_tables.css
+  Descrição: Estilos para tabelas de dados.
+================================================================
+*/
+.table-container {
+    width: 100%;
+    /* Permite scroll horizontal em ecrãs pequenos */
+    overflow-x: auto;
+    /* Limite de altura vertical com scroll */
+    max-height: 400px;
+    overflow-y: auto;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    /* Estiliza a barra de rolagem para melhor UX */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+/* Estilização da barra de rolagem para navegadores WebKit (Chrome, Safari, Edge) */
+.table-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: var(--border-radius);
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: var(--border-radius);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-secondary);
+}
+
+/* Ajuste responsivo para mobile - altura menor */
+@media (max-width: 768px) {
+    .table-container {
+        max-height: 300px;
+    }
+}
+
+/* Ajuste para telas muito pequenas */
+@media (max-width: 480px) {
+    .table-container {
+        max-height: 250px;
+    }
+}
+
+table.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+table.modern-table th,
+table.modern-table td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+/* Cabeçalho da Tabela */
+table.modern-table thead th {
+    background-color: #FAFAFB; /* Um cinza muito leve */
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Corpo da Tabela */
+table.modern-table tbody tr {
+    transition: var(--transition-fast);
+}
+
+table.modern-table tbody tr:hover {
+    background-color: var(--primary-light);
+}
+
+/* Remove a borda da última linha */
+table.modern-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Coluna de Ações */
+.table-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.table-actions .btn {
+    padding: 0.4rem 0.8rem; /* Botões menores */
+    font-size: 0.875rem;
+}
+
+/* Status (Ex: Ativo/Inativo) */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px; /* Pill shape */
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+.status-badge.active {
+    background-color: #E0F2F1;
+    color: #00796B;
+}
+.status-badge.inactive {
+    background-color: #FFEBEE;
+    color: var(--secondary-dark);
+}
+
+
+/* ================================================================
+  FILE: /public/css/components/_cards.css
+  Descrição: Estilos para cards (dashboard, itens).
+================================================================
+*/
+.card-grid {
+    display: grid;
+    /* Colunas responsivas */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 1.5rem;
+    transition: var(--transition-base);
+    overflow: hidden; /* Para cantos arredondados */
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.card-icon {
+    font-size: 1.5rem;
+    padding: 0.75rem;
+    border-radius: 50%;
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+}
+
+.card-body p:last-child {
+    margin-bottom: 0;
+}
+
+/* Card de "Stat" (Ex: N. de Pedidos) */
+.stat-card .stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+.stat-card .stat-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+
+/* ================================================================
+  FILE: /public/css/components/_modals.css
+  Descrição: Estilos para pop-ups (modals).
+================================================================
+*/
+.modal-backdrop {
+    position: fixed;
+    inset: 0; /* (top, right, bottom, left = 0) */
+    background-color: rgba(31, 41, 55, 0.6); /* --text-primary com alfa */
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* Animação de entrada */
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition-fast);
+}
+
+.modal-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    
+    /* Animação de entrada */
+    transform: scale(0.95);
+    transition: var(--transition-base);
+}
+
+.modal-backdrop.open .modal-content {
+    transform: scale(1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    font-weight: 300;
+    color: var(--text-secondary);
+    cursor: pointer;
+    line-height: 1;
+    transition: var(--transition-fast);
+}
+.modal-close:hover {
+    color: var(--text-primary);
+}
+
+.modal-body p:last-child {
+    margin-bottom: 0;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.modal-body .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem auto;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ================================================================
+  INÍCIO DE: _admin-pages.css
+  Descrição: Estilos para as páginas de admin (lista e formulário).
+================================================================ */
+
+/* --- Estilos para users-list.hbs --- */
+
+.page-header {
+    display: flex;
+    flex-wrap: wrap; /* Para mobile */
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 0.2rem;
+}
+
+.page-header h1 {
+    margin-bottom: 0.25rem;
+}
+
+.page-header p {
+    margin-bottom: 0;
+}
+
+.page-header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.btn-danger {
+    background-color: transparent;
+    color: var(--secondary-color);
+    border: 2px solid var(--secondary-color);
+}
+
+.btn-danger:hover {
+    background-color: var(--secondary-color);
+    color: #FFF;
+}
+
+/* --- Estilos para user-form.hbs --- */
+
+.form-card-container {
+    max-width: 600px;
+    margin: 0 auto; /* Centraliza o card do formulário */
+}
+
+/* Alinha os botões "Cancelar" e "Salvar" à direita */
+.form-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+
+/* ================================================================
+  FILE: /public/css/pages/_login.css
+  Descrição: Estilos específicos da página de login.
+================================================================
+*/
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 1.5rem;
+}
+
+
+/* ================================================================
+  FILE: /public/css/pages/_orders.css
+  Descrição: Estilos específicos para o dashboard e upload de pedidos.
+================================================================
+*/
+
+.orders-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.orders-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.order-stat-card {
+    cursor: pointer;
+    border-left: 4px solid transparent;
+}
+
+.order-stat-card.is-active {
+    border-left-color: var(--primary-color);
+    box-shadow: var(--shadow-lg);
+}
+
+.orders-content {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+}
+
+.order-status-sidebar {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 1.5rem;
+    height: fit-content;
+}
+
+.order-status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.order-status-button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: var(--transition-fast);
+    cursor: pointer;
+    text-align: left;
+}
+
+.order-status-button:hover,
+.order-status-button.active {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+}
+
+.order-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.order-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.order-list-header h2 {
+    margin-bottom: 0.25rem;
+}
+
+.order-list-meta {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.order-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.order-card .card-body p {
+    margin-bottom: 0.35rem;
+}
+
+.order-card .card-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-color);
+    margin-top: 1.25rem;
+    padding-top: 0.75rem;
+}
+
+.order-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: var(--primary-light);
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.orders-upload-form .form-group {
+    max-width: 540px;
+}
+
+.orders-upload-form .form-text {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.muted {
+    color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+    .orders-content {
+        grid-template-columns: 1fr;
+    }
+
+    .order-status-sidebar {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 640px) {
+    .order-list-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+.login-title {
+    text-align: center;
+}
+
+
+/* ================================================================
+  FILE: /public/css/pages/_separation.css
+  Descrição: Estilos da jornada de separação de produtos.
+================================================================
+*/
+
+.separation-department-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.separation-department-card .card-body p {
+    margin-bottom: 0.35rem;
+}
+
+.separation-app {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.separation-card {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.separation-card.is-empty {
+    text-align: center;
+}
+
+.separation-card.is-complete {
+    border-left: 4px solid var(--success-color);
+}
+
+.separation-counter {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.separation-counter .counter-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.separation-counter .counter-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+.separation-counter .counter-unit {
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: lowercase;
+}
+
+.separation-card .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.separation-product-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.separation-product-meta .meta-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
+.separation-product-meta .meta-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+.separation-scan-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.scan-input-wrapper {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.scan-input-wrapper .form-control {
+    flex: 1;
+}
+
+.scan-feedback {
+    margin-top: 0.5rem;
+    font-weight: 600;
+}
+
+.scan-feedback[data-variant="error"] {
+    color: var(--secondary-color);
+}
+
+.scan-feedback[data-variant="success"] {
+    color: var(--success-color);
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.login-subtitle {
+    text-align: center;
+}
+
+.btn-access {
+    text-align: center;
+}
+
+.login-box {
+    max-width: 420px;
+    width: 100%;
+}
+
+.login-box .card-body {
+    padding-top: 1rem;
+}
+
+.login-logo {
+    display: block;
+    height: 60px;
+    margin: 0 auto 1.5rem auto;
+}
+
+/* ================================================================
+  FILE: /public/css/pages/_orders.css
+  Descrição: Estilos para gestão de pedidos (picking list).
+================================================================
+*/
+.picking-list {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.picking-item {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-base);
+}
+
+.picking-item .item-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.picking-item .item-details {
+    flex-grow: 1;
+}
+
+.item-details .item-sku {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.item-details .item-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0.25rem 0;
+}
+
+.item-details .item-location {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.picking-item .item-action {
+    /* Checkbox grande */
+    transform: scale(2);
+    margin-right: 1rem;
+    accent-color: var(--success-color);
+}
+
+/* Estado coletado */
+.picking-item.collected {
+    background-color: #F0FFF4;
+    border-color: var(--success-color);
+}
+
+.picking-item.collected .item-name {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+}
+
+/* ================================================================
+  FILE: /public/css/pages/_shipping.css
+  Descrição: Estilos específicos para o módulo de expedição e conferência.
+================================================================
+*/
+
+.shipping-app {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.shipping-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.shipping-list-header h3 {
+    margin-bottom: 0;
+}
+
+.pending-count {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Animação para destacar novo pedido adicionado */
+#checked-orders-table tbody tr.newly-added {
+    animation: highlightNewRow 0.5s ease-out;
+    background-color: var(--primary-light);
+}
+
+@keyframes highlightNewRow {
+    0% {
+        background-color: var(--success-color);
+        opacity: 0.8;
+        transform: translateY(-10px);
+    }
+    100% {
+        background-color: var(--primary-light);
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ================================================================
+   MÓDULO: TORRE DE CONTROLE (DASHBOARD AVANÇADA)
+   Descrição: Estilos completos para filtros, toolbar responsiva
+   e listagem com rolagem independente (App-like).
+   ================================================================
+*/
+
+/* --- 1. Container dos Filtros (Matriz de Filtragem) --- */
+.dashboard-filters {
+    margin-bottom: 0rem;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0rem;
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.filter-group-label {
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 70px; /* Alinhamento fixo do label */
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto; /* Scroll horizontal vital para mobile */
+    padding-bottom: 4px; /* Espaço para a barra de scroll não colar */
+    -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+    scrollbar-width: thin; /* Firefox fino */
+}
+
+/* Custom Scrollbar para os filtros */
+.filter-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+.filter-tabs::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 4px;
+}
+
+.filter-tab {
+    background: #f3f4f6;
+    border: 1px solid transparent;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px; /* Pill shape */
+    font-family: var(--font-family);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.filter-tab:hover {
+    background-color: #e5e7eb;
+    color: var(--primary-dark);
+}
+
+.filter-tab.active {
+    background-color: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(52, 87, 213, 0.2);
+}
+
+/* Badges (Contadores) */
+.filter-tab .badge {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 10px;
+    background-color: rgba(255,255,255, 0.8);
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.filter-tab.active .badge {
+    background-color: rgba(255,255,255, 0.25);
+    color: #fff;
+}
+
+
+/* --- 2. Toolbar Inteligente (Busca vs. Ações em Massa) --- */
+.dashboard-toolbar {
+    margin-bottom: 0.5rem;
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
+    z-index: 5;
+    transition: all 0.3s ease;
+    /* Removemos overflow hidden/visible fixo para deixar crescer */
+}
+
+/* Conteúdo Padrão (Busca) */
+.toolbar-content {
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    
+    /* Transição suave de entrada/saída */
+    opacity: 1;
+    visibility: visible;
+    height: auto;
+    transition: opacity 0.2s ease;
+}
+
+/* Conteúdo de Ações em Massa */
+.bulk-toolbar {
+    /* Por padrão, escondido e sem ocupar espaço */
+    display: none; 
+    background-color: #eff6ff;
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--primary-color);
+    
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* --- ESTADO: MODO DE SELEÇÃO ATIVO --- */
+/* Quando a classe .selection-active é adicionada pelo JS no pai: */
+
+.dashboard-toolbar.selection-active .toolbar-content {
+    display: none; /* Remove a busca do fluxo, liberando espaço */
+}
+
+.dashboard-toolbar.selection-active .bulk-toolbar {
+    display: flex; /* Mostra as ações em massa no fluxo */
+    animation: fadeIn 0.3s ease-out; /* Pequena animação de entrada */
+}
+
+/* Animação Keyframes */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Estilos Internos da Busca */
+.search-group {
+    flex: 1 1 300px;
+    width: 100%;
+}
+
+.search-group input {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-family: var(--font-family);
+    font-size: 0.95rem;
+}
+
+.search-group input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.actions-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Estilos Internos do Bulk */
+.bulk-info {
+    font-weight: 700;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.bulk-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+
+/* --- Responsividade Mobile Específica da Toolbar --- */
+@media (max-width: 768px) {
+    /* Ajustes para a Toolbar de Busca */
+    .toolbar-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0px;
+    }
+    
+    .actions-group {
+        width: 100%;
+    }
+    .actions-group .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Ajustes para a Toolbar de Ações em Massa (O Card Inteligente) */
+    .dashboard-toolbar.selection-active .bulk-toolbar {
+        flex-direction: column; /* Empilha tudo verticalmente */
+        align-items: stretch; /* Estica para ocupar largura total */
+        gap: 0.5rem;
+    }
+
+    .bulk-info {
+        justify-content: space-between; /* Espalha "X selecionados" e "Selecionar Tudo" */
+        width: 100%;
+        border-bottom: 1px solid #dbeafe;
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .bulk-actions {
+        flex-direction: column; /* Botões um embaixo do outro */
+        width: 100%;
+    }
+
+    .bulk-actions select, 
+    .bulk-actions button {
+        width: 100%; /* Botões grandes para dedo */
+        height: 44px;
+        margin-bottom: 0.2rem;
+    }
+    
+    /* Removemos margens negativas ou posições absolutas que quebravam o layout */
+}
+
+
+/* --- 4. Lista de Pedidos (Rolagem Independente) --- */
+.orders-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    position: relative;
+    
+    /* CÁLCULO DE ALTURA FIXA PARA ROLAGEM INTERNA */
+    /* 100vh (tela) - header - padding - filtros - toolbar ~ 340px */
+    height: calc(100vh - 340px);
+    min-height: 400px; /* Altura mínima de segurança */
+    
+    overflow-y: auto; /* Scroll apenas aqui */
+    overflow-x: hidden;
+    
+    padding-right: 6px; /* Espaço para scrollbar não cobrir card */
+    padding-bottom: 2rem;
+    
+    /* Scrollbar Estilizada */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.orders-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+.orders-list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.orders-list-container::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}
+
+/* Placeholder de Carregamento */
+.loading-placeholder {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.loading-opacity {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+/* --- 5. Card do Pedido (Desktop: Grid Flexível e Detalhado) --- */
+.order-card-row {
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
+    
+    display: grid;
+    /* Grid Desktop: Checkbox | Info Principal (2fr) | Datas (1fr) | Fiscal (1fr) | Seta (auto) */
+    /* A coluna Info ganha peso (2fr) para acomodar nomes e SKUs longos */
+    grid-template-columns: auto 2fr 1fr 1fr auto; 
+    
+    /* ALINHAMENTO AO TOPO: Crucial para cards que crescem verticalmente */
+    align-items: start; 
+    
+    gap: 1.5rem;
+    padding: 1rem 1.2rem;
+    
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+    height: auto; /* Permite crescer conforme o conteúdo */
+}
+
+.order-card-row:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+    border-color: #d1d5db;
+}
+
+.order-card-row.selected {
+    background-color: #f0f9ff;
+    border-color: var(--primary-color);
+    box-shadow: inset 3px 0 0 var(--primary-color);
+}
+
+/* Checkbox (Coluna 1) */
+.order-selection-checkbox {
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.3s ease;
+    /* Alinha o checkbox com o topo do texto na desktop */
+    margin-top: 0.3rem; 
+}
+
+.order-selection-checkbox.visible {
+    width: 24px;
+    opacity: 1;
+    margin-right: 0.5rem;
+}
+
+.order-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+/* Info Principal (Coluna 2) */
+.order-info-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem; /* Espaço entre cabeçalho e detalhes */
+}
+
+.order-header-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.order-number {
+    font-weight: 800;
+    color: var(--primary-color);
+    font-size: 1.05rem;
+}
+
+/* Badges de Status */
+.order-status-badge {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    padding: 0.15rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+}
+
+/* Cores de Status */
+.status-pendente    { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.status-separado    { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.status-em_romaneio { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+.status-enviado     { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.status-cancelado   { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.status-entregue    { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+.badge-manual {
+    background-color: #8b5cf6;
+    color: white;
+    font-size: 0.65rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 10px;
+}
+
+/* Bloco de Detalhes (Comprador e SKUs) */
+.order-details-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.detail-row {
+    display: flex;
+    flex-direction: column; /* Label em cima, Valor embaixo */
+    gap: 0.1rem;
+}
+
+.detail-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+}
+
+.detail-value {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    
+    /* Permite quebra de linha para nomes/SKUs grandes */
+    white-space: normal; 
+    overflow-wrap: break-word; 
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+.text-uppercase {
+    text-transform: uppercase;
+}
+
+.sku-list {
+    color: var(--primary-dark);
+    font-family: 'Consolas', 'Monaco', monospace; /* Fonte técnica */
+    font-size: 0.85rem;
+    background: #f8fafc;
+    padding: 2px 4px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Datas (Coluna 3) */
+.order-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding-top: 0.2rem; /* Alinhamento visual com texto */
+}
+
+.date-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.text-danger { color: #dc2626; }
+.text-warning { color: #d97706; }
+
+/* Fiscal: Loja e NF (Coluna 4) */
+.order-fiscal {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding-top: 0.2rem;
+}
+
+.fiscal-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.nfe-tag {
+    display: inline-block;
+    background: #f3f4f6;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.nfe-missing {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* Ações (Coluna 5) */
+.order-actions {
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* Espaço entre o botão de etiqueta e a seta */
+    justify-content: flex-end;
+}
+.order-actions i {
+    color: #d1d5db;
+    font-size: 1.2rem;
+}
+
+.action-arrow {
+    color: #d1d5db;
+    font-size: 1.2rem;
+}
+
+.btn-print-label {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.btn-print-label:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    /* No mobile, a seta (.action-arrow) já está oculta pelo CSS anterior.
+       Mas queremos mostrar o botão de etiqueta se ele existir! */
+    
+    .order-actions {
+        display: flex; /* Garante que apareça */
+        width: 100%;
+        justify-content: flex-start; /* Alinha à esquerda no mobile */
+        margin-top: 0.5rem;
+        padding-top: 0.8rem;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    /* Oculta apenas a seta, mantém o botão */
+    .order-actions .action-arrow {
+        display: none; 
+    }
+    
+    .btn-print-label {
+        width: 100%; /* Botão grande no mobile para facilitar o toque */
+        justify-content: center;
+        padding: 0.6rem;
+    }
+}
+
+
+/* === RESPONSIVIDADE MOBILE DO CARD === */
+/* Adicione ou substitua no bloco de media query existente */
+@media (max-width: 768px) {
+    .order-card-row {
+        grid-template-columns: 1fr; /* Coluna única */
+        gap: 1rem;
+        padding: 1rem;
+        align-items: stretch;
+    }
+
+    /* Checkbox no topo */
+    .order-selection-checkbox {
+        margin-top: 0;
+    }
+    .order-selection-checkbox.visible {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    /* Datas e Fiscal viram um Grid de 2 colunas no mobile */
+    .order-dates, .order-fiscal {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Lado a lado */
+        gap: 1rem;
+        
+        padding-top: 0.8rem;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    /* Em telas muito pequenas, volta pra 1 coluna */
+    @media (max-width: 400px) {
+        .order-dates, .order-fiscal {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .detail-row {
+        /* No mobile, podemos colocar label e valor na mesma linha para economizar altura, se preferir */
+        /* flex-direction: row; align-items: baseline; gap: 0.5rem; */
+        
+        /* Ou manter empilhado para leitura clara: */
+        flex-direction: column; 
+    }
+}
+
+/* --- Paginação --- */
+.pagination-container {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    /* Adiciona padding bottom extra para não colar no fim do scroll */
+    padding-bottom: 2rem; 
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.4rem;
+    border-radius: 50px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color);
+}
+
+.pagination button {
+    border-radius: 20px;
+    padding: 0.3rem 0.8rem;
+}
+
+.pagination-info {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+    padding: 0 0.8rem;
+}
+
+
+/* ================================================================
+   RESPONSIVIDADE (MOBILE / TABLET)
+   ================================================================
+*/
+@media (max-width: 768px) {
+    /* 1. Ajuste dos Filtros */
+    .filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+    
+    .filter-tabs {
+        width: 100%; /* Força largura total para permitir scroll */
+        padding-bottom: 8px;
+    }
+
+    /* 2. Ajuste da Toolbar (Busca e Botões) */
+    .toolbar-content {
+        flex-direction: column; /* Empilha busca e botões */
+        align-items: stretch;
+        gap: 0.8rem;
+        padding: 1rem;
+    }
+
+    .actions-group {
+        width: 100%;
+        justify-content: space-between; /* Botões ocupam espaço */
+    }
+    
+    .actions-group .btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    /* Toolbar de Massa Mobile */
+    .bulk-toolbar {
+        flex-direction: column;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .bulk-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .bulk-actions select, .bulk-actions button {
+        width: 100%;
+        height: 44px; /* Touch target maior */
+    }
+
+    /* 3. Ajuste da Lista (Altura no Mobile) */
+    .orders-list-container {
+        /* No mobile, temos mais elementos verticais empilhados (toolbar maior, filtros maiores) */
+        /* Ajustamos o cálculo para evitar que corte o final */
+        height: calc(100vh - 420px); 
+    }
+
+    /* 4. Transformação do Card para Bloco (Mobile Card) */
+    .order-card-row {
+        grid-template-columns: 1fr; /* Uma coluna única */
+        gap: 0.8rem;
+        padding: 1rem;
+        position: relative;
+    }
+
+    /* Reposiciona elementos para fluxo vertical */
+    .order-selection-checkbox.visible {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid #f3f4f6;
+        padding-bottom: 0.5rem;
+    }
+    
+    .order-checkbox {
+        width: 24px;
+        height: 24px; /* Checkbox maior */
+    }
+
+    .order-customer {
+        font-size: 1rem;
+        white-space: normal; /* Permite quebra de linha no nome */
+        max-width: none;
+    }
+
+    .order-header-row {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    /* Datas ficam embaixo, em linha */
+    .order-dates {
+        flex-direction: row;
+        width: 100%;
+        justify-content: flex-start;
+        gap: 1rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    .order-nfe {
+        text-align: left;
+    }
+
+    .order-actions {
+        display: none; /* Remove seta em mobile */
+    }
+}
+
+/* ================================================================
+   NOVO: MODO DE OPERAÇÃO (SWITCH FLEX)
+   Estilização do card superior com a chave de alternância
+   ================================================================
+*/
+
+/* Container do Card "Modo de Operação" */
+.flex-mode-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.2rem;
+    margin-bottom: 0rem; /* Espaço antes dos filtros de abas */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem; /* Espaço entre os textos e a chave */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+/* Textos Laterais (Normal vs Flex) */
+.mode-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+/* Destaque quando ativo */
+.mode-label.active-flex {
+    color: var(--primary-color); /* Azul do sistema */
+    font-weight: 700;
+}
+
+.mode-label.active-normal {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* Ícone de Raio do Flex */
+.flex-icon {
+    font-size: 1.2rem;
+}
+
+/* --- COMPONENTE SWITCH (CHAVE) --- */
+.switch-container {
+    position: relative;
+    display: inline-block;
+    width: 64px;
+    height: 34px;
+}
+
+/* Esconde o checkbox padrão HTML */
+.switch-container input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* O trilho da chave */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc; /* Cinza quando desligado (Normal) */
+    transition: .4s;
+    border-radius: 34px; /* Formato pílula arredondada */
+}
+
+/* A bolinha (knob) da chave */
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Estado: Ligado (Checked = Flex) */
+input:checked + .slider {
+    background-color: var(--primary-color); /* Fica azul */
+}
+
+input:checked + .slider:before {
+    transform: translateX(30px); /* Move a bolinha para a direita */
+}
+
+/* Efeito de Foco (Acessibilidade) */
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--primary-color);
+}
+
+/* ==========================================================================
+   NOVO CSS: Card Flex e Filtro de Data Responsivo
+   ========================================================================== */
+
+/* O container principal do card */
+.flex-mode-card {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 0rem;
+    display: flex;
+    flex-wrap: wrap; /* Permite quebrar linha no mobile */
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem; /* Espaço entre o switch e as datas quando quebrar linha */
+    border: 1px solid #e2e8f0; /* Borda sutil para definição */
+}
+
+/* Grupo do Switch (Esquerda) */
+.flex-switch-group {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* Ocupa espaço disponível */
+}
+
+/* Wrapper do Filtro de Data (Direita) */
+.date-range-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    /* Borda separadora e padding apenas em telas maiores (veja media query abaixo) */
+}
+
+/* Cabeçalho (Ícone e Título "Período") */
+.date-range-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.2;
+}
+
+.date-range-title {
+    font-size: 0.7rem;
+    color: #a0aec0; /* text-muted mais claro */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Container dos dois inputs */
+.date-inputs-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: #f8fafc; /* Fundo sutil para destacar a área de input */
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #edf2f7;
+}
+
+/* Grupo individual (Label + Input) */
+.date-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.date-input-group label {
+    font-size: 0.7rem;
+    color: #718096;
+    margin-bottom: 0;
+    font-weight: 500;
+}
+
+/* O input de data estilizado para o padrão do sistema */
+.system-date-input {
+    background-color: #fff;
+    border: 1px solid #e2e8f0 !important; /* Força a borda padrão do sistema */
+    border-radius: 6px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.85rem;
+    color: #4a5568;
+    height: auto; /* Remove altura fixa para se adaptar ao padding */
+    width: auto;
+    min-width: 125px; /* Garante largura mínima legível para datas */
+    transition: all 0.2s ease;
+}
+
+.system-date-input:focus {
+    border-color: var(--primary-color, #3182ce) !important;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15) !important;
+}
+
+/* === RESPONSIVIDADE === */
+
+/* Telas Médias e Grandes (Desktop/Tablet Horizontal) */
+@media (min-width: 768px) {
+    .flex-mode-card {
+        flex-wrap: nowrap; /* Não quebra linha */
+    }
+    
+    .date-range-wrapper {
+        /* Adiciona a linha separadora vertical apenas no desktop */
+        /*border-left: 1px solid #e2e8f0;*/
+        padding-left: 1.5rem;
+    }
+}
+
+/* Telas Pequenas (Mobile) */
+@media (max-width: 767.98px) {
+    .flex-mode-card {
+        flex-direction: column; /* Empilha verticalmente */
+        align-items: stretch; /* Estica para a largura total */
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .flex-switch-group {
+        justify-content: center; /* Centraliza o switch */
+        margin-bottom: 0.5rem;
+    }
+
+    .date-range-wrapper {
+        border-top: 1px solid #e2e8f0; /* Muda para linha separadora horizontal */
+        padding-top: 1rem;
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    /* No mobile muito pequeno, talvez quebre os inputs também */
+    @media (max-width: 480px) {
+        .date-range-wrapper {
+             flex-direction: column;
+             align-items: flex-start;
+             gap: 0.5rem;
+        }
+        .date-inputs-container {
+            width: 100%;
+            justify-content: space-between;
+        }
+        .system-date-input {
+             min-width: auto; /* Permite encolher mais se necessário */
+             width: 100%;
+        }
+    }
+}
+
+/* ==========================================================================
+   NOVO CSS: Contador de Equação de Expedição (Dashboard)
+   ========================================================================== */
+.shipping-equation-counter {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: #f8fafc;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #edf2f7;
+}
+
+.equation-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.equation-label {
+    font-size: 0.65rem;
+    color: #718096;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.shipping-equation-counter .badge {
+    font-size: 0.95rem;
+    font-weight: 800;
+    padding: 0.2rem 0.8rem;
+    border-radius: 12px;
+    min-width: 40px;
+    text-align: center;
+    display: inline-block;
+}
+
+/* Cores alinhadas com os status da lista */
+.badge-pendente { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.badge-separado { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.badge-em-romaneio { background-color: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+
+/* Destaque especial para o Total Geral */
+.badge-total { 
+    background-color: var(--primary-color); 
+    color: #fff; 
+    border: 1px solid var(--primary-dark);
+    box-shadow: 0 2px 4px rgba(52, 87, 213, 0.3); 
+}
+
+.equation-item.total .equation-label {
+    color: var(--primary-color);
+}
+
+.equation-math {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #cbd5e1;
+    /* Alinha verticalmente com as badges, empurrando o label para cima */
+    margin-top: 1.2rem; 
+}
+
+/* === Ajustes de Responsividade para a Equação === */
+@media (min-width: 1024px) {
+    .shipping-equation-counter {
+        background-color: transparent;
+        border: none;
+        /* Adiciona a mesma linha separadora vertical do seletor de datas */
+        border-left: 1px solid #e2e8f0;
+        border-radius: 0;
+        padding: 0 0 0 1.5rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .shipping-equation-counter {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap; /* Caso fique muito apertado num telemóvel pequeno */
+        margin-top: 0.5rem;
+    }
+}

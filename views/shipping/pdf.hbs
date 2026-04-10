@@ -1,0 +1,192 @@
+<div class="a4-page">
+    <header class="pdf-header">
+        <div class="pdf-logo">
+            <img src="/images/logo-anzai-desktop.png" alt="Casa Anzai">
+        </div>
+        <div class="pdf-info">
+            <h1>Romaneio de Expedição</h1>
+            <p><strong>Lote:</strong> {{batch.batch_number}} | <strong>Data:</strong> {{formatDate batch.created_at}} | <strong>Resp:</strong> {{batch.responsavel}}</p>
+        </div>
+    </header>
+
+    <table class="pdf-table">
+        <thead>
+            <tr>
+                <th style="width: 15%">Pedido</th>
+                <th style="width: 60%">Produtos</th>
+                <th style="width: 10%">Qtd.</th>
+                <th style="width: 15%">Canal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each batch.orders}}
+                <tr>
+                    <td class="order-number"><strong>{{numero_venda}}</strong></td>
+                    <td class="product-cell">{{produtos}}</td>
+                    <td class="text-center quantity">{{total_unidades}}</td>
+                    <td class="platform">{{platformLabel plataforma}}</td>
+                </tr>
+            {{/each}}
+        </tbody>
+        <tfoot>
+            <tr class="summary-row">
+                <td colspan="2" class="text-right"><strong>Total:</strong></td>
+                <td class="text-center"><strong>{{sum batch.orders "total_unidades"}}</strong></td>
+                <td class="text-center"><strong>{{length batch.orders}} pedidos</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <footer class="pdf-footer">
+        <div class="signature-box">
+            <p>Assinatura do Transportador</p>
+        </div>
+    </footer>
+</div>
+
+<style>
+    /* Estilos específicos para impressão A4 - Otimizado para máximo de pedidos */
+    @page { 
+        size: A4; 
+        margin: 15mm 10mm; /* Margens reduzidas para mais espaço */
+    }
+    
+    body { 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        color: #333; 
+        margin: 0;
+        padding: 0;
+    }
+    
+    .a4-page { 
+        width: 100%; 
+        max-width: 210mm; 
+        margin: 0 auto; 
+    }
+    
+    /* Header compacto */
+    .pdf-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 12px; 
+        border-bottom: 2px solid #003366; 
+        padding-bottom: 8px; 
+    }
+    
+    .pdf-logo img { 
+        max-height: 45px; 
+    }
+    
+    .pdf-info { 
+        text-align: right; 
+    }
+    
+    .pdf-info h1 { 
+        margin: 0 0 4px 0; 
+        font-size: 16pt; 
+        color: #003366; 
+    }
+    
+    .pdf-info p { 
+        margin: 0; 
+        font-size: 9pt; 
+        color: #555;
+    }
+
+    /* Tabela ultra-compacta */
+    .pdf-table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        font-size: 8pt; /* Fonte menor para caber mais */
+        margin-bottom: 10px;
+    }
+    
+    .pdf-table th { 
+        background-color: #003366; 
+        color: #fff;
+        border-bottom: 2px solid #002244; 
+        padding: 6px 4px; /* Padding reduzido */
+        text-align: left; 
+        font-weight: 700;
+        font-size: 7.5pt;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .pdf-table td { 
+        border-bottom: 1px solid #e0e0e0; 
+        padding: 4px; /* Padding mínimo */
+        vertical-align: middle; 
+        line-height: 1.3;
+    }
+    
+    .pdf-table tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .order-number {
+        font-size: 8.5pt;
+        font-weight: 600;
+    }
+    
+    .product-cell { 
+        font-size: 7.5pt; 
+        color: #444;
+        line-height: 1.4;
+    }
+    
+    .quantity {
+        font-weight: 600;
+        color: #003366;
+    }
+    
+    .platform {
+        font-size: 7.5pt;
+        color: #666;
+    }
+    
+    .text-center { 
+        text-align: center; 
+    }
+    
+    .text-right { 
+        text-align: right; 
+    }
+    
+    /* Footer compacto */
+    .pdf-footer { 
+        margin-top: 15px; 
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+    }
+    
+    .signature-box { 
+        border-top: 1px solid #333; 
+        width: 180px; 
+        text-align: center; 
+        padding-top: 4px;
+        font-size: 8pt;
+    }
+    
+    /* Linha de resumo */
+    .summary-row {
+        background-color: #f0f0f0;
+        font-weight: 700;
+    }
+    
+    .summary-row td {
+        padding: 6px 4px;
+        border-top: 2px solid #003366;
+        border-bottom: none;
+    }
+    
+    /* Evita quebra de página dentro de linhas */
+    .pdf-table tr {
+        page-break-inside: avoid;
+    }
+</style>
+
+<script>
+    window.print();
+</script>

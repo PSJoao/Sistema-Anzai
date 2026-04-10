@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema - Casa Anzai</title>
+    <link rel="icon" href="/images/favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!--CSS Main-->
+    <link rel="stylesheet" href="/css/main.css">
+    <!--CSS Main-->
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo-container">
+            <img src="/images/logo-anzai-desktop.png" alt="Logo Casa Anzai" class="logo">
+        </div>
+
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/dashboard" class="{{#if (eq activePage 'dashboard')}}active{{/if}}">Dashboard</a></li>
+                
+                <li><a href="/pedidos" class="{{#if (eq activePage 'pedidos')}}active{{/if}}">Pedidos</a></li>
+
+                <li><a href="/pedidos/sem-etiqueta" class="{{#if (eq activePage 'sem-etiqueta')}}active{{/if}}">Sem Etiqueta</a></li>
+
+                <li><a href="/pedidos/packaging/conference" class="{{#if (eq activePage 'conference')}}active{{/if}}">Conferência</a></li>
+                
+                <!--{{#if (eq user.role "admin")}}
+                    <li><a href="/admin/users" class="{{#if (eq activePage 'users')}}active{{/if}}">Utilizadores</a></li>
+                {{/if}}-->
+            </ul>
+        </nav>
+
+        <div class="user-profile">
+            <span style="font-size: 36px;">{{user.username}}</span>
+        </div>
+
+    </header>
+
+    <nav class="mobile-nav">
+        <ul>
+            <li><a href="/dashboard" class="{{#if (eq activePage 'dashboard')}}active{{/if}}">Dashboard</a></li>
+            <li><a href="/pedidos" class="{{#if (eq activePage 'pedidos')}}active{{/if}}">Pedidos</a></li>
+            <li><a href="/pedidos/sem-etiqueta" class="{{#if (eq activePage 'sem-etiqueta')}}active{{/if}}">Sem Etiqueta</a></li>
+            <li><a href="/pedidos/packaging/conference" class="{{#if (eq activePage 'conference')}}active{{/if}}">Conferência</a></li>
+            
+            <!--{{#if (eq user.role "admin")}}
+                <li><a href="/admin/users" class="{{#if (eq activePage 'users')}}active{{/if}}">Utilizadores</a></li>
+            {{/if}}-->
+            
+            <li><a href="/auth/logout">Sair</a></li>
+        </ul>
+    </nav>
+
+    <button class="mobile-menu-toggle" aria-label="Abrir Menu">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+    </button>
+
+
+    <main class="main-content">
+        {{{body}}}
+    </main>
+    <script src="/scripts/main.js"></script>
+</body>
+</html>

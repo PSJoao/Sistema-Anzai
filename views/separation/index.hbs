@@ -1,0 +1,116 @@
+<div class="page-header">
+    <div>
+        <h1>Separação de Produtos</h1>
+        <p>Utilize os filtros abaixo para organizar sua fila de trabalho.</p>
+    </div>
+</div>
+
+<div class="card mb-4" style="margin-bottom: 20px; ">
+    <div class="card-body">
+        <form id="separationFiltersForm" method="GET" action="/separacao" style="display: flex; gap: 50px; align-items: center; flex-wrap: wrap;">
+            
+            <div class="form-group mb-0">
+                <label for="companySelect" style="font-weight: bold; display: block; margin-bottom: 5px;">Filtrar Loja:</label>
+                <select name="company" id="companySelect" class="form-control" style="min-width: 150px;">
+                    <option value="todos" {{#if (eq activeCompany 'todos')}}selected{{/if}}>Todas as Lojas</option>
+                    {{#each companies}}
+                        <option value="{{this}}" {{#if (eq ../activeCompany this)}}selected{{/if}}>Loja {{this}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <div class="form-group mb-0">
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Filtrar por prazo: </label>
+                <div style="display: flex; gap: 15px; align-items: center; height: 38px;">
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; margin: 0;">
+                        <input type="checkbox" name="deadlines" value="atrasado" {{#if (includes activeDeadlines 'atrasado')}}checked{{/if}}>
+                        <span class="text-primary font-weight-bold">Atrasados</span>
+                    </label>
+                    
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; margin: 0;">
+                        <input type="checkbox" name="deadlines" value="hoje" {{#if (includes activeDeadlines 'hoje')}}checked{{/if}}>
+                        <span class="text-primary font-weight-bold">Para Hoje</span>
+                    </label>
+                    
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; margin: 0;">
+                        <input type="checkbox" name="deadlines" value="futuro" {{#if (includes activeDeadlines 'futuro')}}checked{{/if}}>
+                        <span class="text-muted">Futuros</span>
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                Aplicar Filtros
+            </button>
+        </form>
+    </div>
+</div>
+
+{{#if error}}
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="form-error text-danger">{{error}}</div>
+        </div>
+    </div>
+{{/if}}
+
+{{#if departments.length}}
+    <div class="separation-department-grid">
+        {{#each departments}}
+            <article class="card separation-department-card">
+                <div class="card-header">
+                    <h3 class="card-title">{{lookup ../departmentLabels this.cod_departamento}}</h3>
+                </div>
+                
+                <div class="card-body">
+                    <div class="stat-row" style="margin-bottom: 10px;">
+                        <div class="text-muted small">Produtos Pendentes: {{this.produtos_com_pendencia}}</div>
+                        <div class="text-muted small">Unidades Pendentes: {{this.unidades_pendentes}}</div>
+                    </div>
+
+                    {{#if (eq ../activeCompany 'todos')}}
+                        <div class="company-breakdown" style="border-top: 1px solid #eee; padding-top: 8px; margin-top: 8px;">
+                            <p class="text-muted small mb-1" style="font-size: 0.8rem;">Por Loja:</p>
+                            <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem;">
+                                {{#each this.empresas}}
+                                    <li style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                                        <span>Loja {{@key}}:</span>
+                                        <strong>Un. Pend.: {{this}}</strong>
+                                    </li>
+                                {{/each}}
+                            </ul>
+                        </div>
+                    {{/if}}
+                </div>
+                
+                <footer class="card-footer" style="margin-top: 10px;">
+                    <a href="/separacao/departamento/{{this.cod_departamento}}" 
+                       class="btn btn-primary btn-block btn-department-link">
+                       Iniciar Separação
+                    </a>
+                </footer>
+            </article>
+        {{/each}}
+    </div>
+{{else}}
+    <div class="empty-state card">
+        <div class="card-body text-center py-5">
+            <p class="text-muted lead">Nenhum departamento possui produtos pendentes com os filtros selecionados.</p>
+            <a href="/separacao" class="btn btn-outline mt-3">Ver Tudo</a>
+        </div>
+    </div>
+{{/if}}
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Pega os parâmetros da URL atual (ex: ?company=001&deadlines=atrasado)
+        const currentParams = window.location.search;
+        
+        if (currentParams) {
+            const links = document.querySelectorAll('.btn-department-link');
+            links.forEach(link => {
+                // Anexa os parâmetros ao link existente
+                link.href += currentParams;
+            });
+        }
+    });
+</script>

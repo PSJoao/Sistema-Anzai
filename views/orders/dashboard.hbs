@@ -1,0 +1,267 @@
+<div class="page-header">
+    <div class="header-content">
+        <h1>Dashboard de Pedidos</h1>
+        <p class="text-muted">Gestão dos pedidos das plataformas.</p>
+    </div>
+    <div class="header-actions">
+        <button id="btnExportLogs" class="btn btn-outline" style="margin-right: 10px;" title="Produtividade da Equipe">
+            <i class="icon-users"></i> Exportar Registros
+        </button>
+        <button id="btnExportExcel" class="btn btn-outline" style="margin-right: 10px;">
+            <i class="icon-download"></i> Exportar Relatório
+        </button>
+        <a href="/pedidos/importacao-status" class="btn btn-primary">
+            <i class="icon-upload"></i> Status em Massa
+        </a>
+        <a href="/pedidos/upload" class="btn btn-primary">
+            <i class="icon-upload"></i> Importar Pedidos
+        </a>
+        <a href="/pedidos/importacao-plataforma" class="btn btn-primary btn-lg mt-3">
+            Conciliação via Relatório da Plataforma
+        </a>
+    </div>
+</div>
+
+<div class="container-fluid" style="padding: 0 2rem;">
+    <div class="filter-group">
+        <div class="filter-tabs">
+            <a href="?plataforma=mercado_livre" 
+            class="filter-tab {{#unless (eq activePlatformFilter 'shopee')}}active{{/unless}}"
+            style="text-decoration: none; font-size: 1rem; padding: 0.6rem 1.5rem; {{#unless (eq activePlatformFilter 'shopee')}}background-color: #ffe600; border-color: #ffe600; box-shadow: 0 2px 4px rgba(255, 230, 0, 0.4); color: #2d3277; font-weight: 800;{{/unless}}">
+                Mercado Livre
+            </a>
+            <a href="?plataforma=shopee" 
+            class="filter-tab {{#if (eq activePlatformFilter 'shopee')}}active{{/if}}"
+            style="text-decoration: none; font-size: 1rem; padding: 0.6rem 1.5rem; {{#if (eq activePlatformFilter 'shopee')}}background-color: #ee4d2d; border-color: #ee4d2d; box-shadow: 0 2px 4px rgba(238, 77, 45, 0.3); color: #fff; font-weight: 800;{{/if}}">
+                Shopee
+            </a>
+        </div>
+
+        <div class="flex-mode-card" style="display: flex; justify-content: end;">
+        
+            <div class="flex-switch-group" id="flexFilterContainer">
+                <span class="mode-label {{#unless activeFlexFilter}}active-normal{{/unless}}" id="labelNormal">
+                    Entrega Normal
+                </span>
+                
+                <label class="switch-container" style="margin-left: 10px; margin-right: 10px;">
+                    <input type="checkbox" id="flexFilter" {{#if activeFlexFilter}}checked{{/if}}>
+                    <span class="slider"></span>
+                </label>
+                
+                <span class="mode-label {{#if activeFlexFilter}}active-flex{{/if}}" id="labelFlex">
+                    <i class="icon-flash flex-icon"></i> Entrega Flex
+                </span>
+            </div>
+
+            <div class="date-range-wrapper">
+                
+                <div class="date-range-header">
+                    <i class="icon-calendar text-muted"></i>
+                    <span class="date-range-title">Período (Data Ação)</span>
+                </div>
+                
+                <div class="date-inputs-container">
+                    <div class="date-input-group">
+                        <label for="startDateInput">De</label>
+                        <input type="date" id="startDateInput" class="form-control system-date-input" value="{{activeStartDate}}">
+                    </div>
+                    
+                    <div class="date-input-group">
+                        <label for="endDateInput">Até</label>
+                        <input type="date" id="endDateInput" class="form-control system-date-input" value="{{activeEndDate}}">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="shipping-equation-counter">
+                <div class="equation-item">
+                    <span class="equation-label">Pendentes</span>
+                    <span class="badge badge-pendente" id="eq-pendente">-</span>
+                </div>
+                <span class="equation-math">+</span>
+                <div class="equation-item">
+                    <span class="equation-label">Separados</span>
+                    <span class="badge badge-separado" id="eq-separado">-</span>
+                </div>
+                <span class="equation-math">+</span>
+                <div class="equation-item">
+                    <span class="equation-label">Embalados</span>
+                    <span class="badge badge-em-romaneio" id="eq-em-romaneio">-</span>
+                </div>
+                <span class="equation-math">=</span>
+                <div class="equation-item total">
+                    <span class="equation-label">Total Geral</span>
+                    <span class="badge badge-total" id="eq-total">-</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-filters">
+    <div class="filter-group">
+        <span class="filter-group-label">Expedição:</span>
+        <div class="filter-tabs" id="statusFilters">
+            <button class="filter-tab active" data-filter-type="status" data-value="todos">
+                Todos
+            </button>
+            <button class="filter-tab" data-filter-type="status" data-value="pendente">
+                Pendentes <span class="badge" data-stat-counter="pendente">-</span>
+            </button>
+            <button class="filter-tab" data-filter-type="status" data-value="separado">
+                Separados <span class="badge" data-stat-counter="separado">-</span>
+            </button>
+            <button class="filter-tab" data-filter-type="status" data-value="em_romaneio">
+                Embalados <span class="badge" data-stat-counter="em_romaneio">-</span>
+            </button>
+            <button class="filter-tab" data-filter-type="status" data-value="enviado">
+                Enviados <span class="badge" data-stat-counter="enviado">-</span>
+            </button>
+
+            <button class="filter-tab" data-filter-type="status" data-value="entregue">
+                Entregues <span class="badge" data-stat-counter="entregues">-</span>
+            </button>
+            
+            <button class="filter-tab" data-filter-type="status" data-value="venda_concretizada">
+                Venda Concretizada <span class="badge" data-stat-counter="venda_concretizada">-</span>
+            </button>
+
+            <button class="filter-tab" data-filter-type="status" data-value="devolucao_analise">
+                Dev. Análise <span class="badge" data-stat-counter="devolucao_analise">-</span>
+            </button>
+            
+            <button class="filter-tab" data-filter-type="status" data-value="devolucao_concluida">
+                Dev. Concluída <span class="badge" data-stat-counter="devolucao_concluida">-</span>
+            </button>
+
+            <button class="filter-tab" data-filter-type="status" data-value="nao_entregue">
+                Não Entregue <span class="badge" data-stat-counter="nao_entregue">-</span>
+            </button>
+            <button class="filter-tab" data-filter-type="status" data-value="cancelado">
+                Cancelados <span class="badge" data-stat-counter="cancelados">-</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="filter-group mt-2" id="dateFilterGroup">
+        <span class="filter-group-label">Prazos:</span>
+        <div class="filter-tabs" id="dateFilters">
+            <button class="filter-tab active" data-filter-type="date" data-value="todos">
+                Todos
+            </button>
+            <button class="filter-tab" data-filter-type="date" data-value="hoje">
+                Para Hoje <span class="badge" data-stat-counter="hoje">-</span>
+            </button>
+            <button class="filter-tab" data-filter-type="date" data-value="atrasados">
+                Atrasados <span class="badge badge-danger" data-stat-counter="atrasados">-</span>
+            </button>
+            <button class="filter-tab" data-filter-type="date" data-value="futuros">
+                Futuros <span class="badge" data-stat-counter="futuros">-</span>
+            </button>
+            <!--<button class="filter-tab" data-filter-type="date" data-value="agendados">
+                Agendados <span class="badge" data-stat-counter="agendados">-</span>
+            </button>-->
+        </div>
+    </div>
+
+    <div class="filter-group mt-2" id="returnHistoryFilterGroup" style="display: none;">
+        <div style="display: flex;">
+            <span class="filter-group-label" style="padding-right: 15px; margin-top: 10px;">Resolução:</span>
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter-type="devHistorico" data-value="todos">
+                    Todos
+                </button>
+                <button class="filter-tab" data-filter-type="devHistorico" data-value="nao_resolvido">
+                    Não Resolvido <span class="badge" data-stat-counter="dev_nao_resolvido">-</span>
+                </button>
+                <button class="filter-tab" data-filter-type="devHistorico" data-value="resolvido">
+                    Resolvido <span class="badge" data-stat-counter="dev_resolvido">-</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-toolbar card" style="padding: 0.2rem 0.2rem 0.2rem 0.2rem;">
+    <div class="toolbar-content">
+        <div class="company-filter-group" style="flex: 0 0 auto;">
+            <select id="companySelect" class="form-control" style="min-width: 150px;">
+                <option value="todos" {{#if (eq activeCompanyFilter 'todos')}}selected{{/if}}>Todas Empresas</option>
+                
+                {{#each companies}}
+                    <option value="{{this}}" {{#if (eq ../activeCompanyFilter this)}}selected{{/if}}>
+                        Empresa {{this}}
+                    </option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div id="divergenceFilterWrapper" style="display: none; margin-left: 15px; align-self: center;">
+            <div class="custom-control custom-checkbox" title="Mostrar apenas pedidos que constam como Enviados no sistema, mas não no relatório da plataforma.">
+                <input type="checkbox" class="custom-control-input" id="divergenceFilter">
+                <label class="custom-control-label text-danger" for="divergenceFilter">
+                    <i class="icon-exclamation"></i> <strong>Não Enviados - Plataforma</strong>
+                </label>
+            </div>
+        </div>
+
+        <div class="mediation-filter-group" style="margin-right: 10px;">
+            <select id="mediationSelect" class="form-control" style="min-width: 140px; border-color: #e2e8f0;">
+                <option value="todos" {{#if (eq activeMediationFilter 'todos')}}selected{{/if}}>Todos Mediação</option>
+                <option value="sem_mediacao" {{#if (eq activeMediationFilter 'sem_mediacao')}}selected{{/if}}>Sem Mediação</option>
+                <option value="aberta" {{#if (eq activeMediationFilter 'aberta')}}selected{{/if}}>Em Aberto</option>
+                <option value="fechada" {{#if (eq activeMediationFilter 'fechada')}}selected{{/if}}>Fechada</option>
+            </select>
+        </div>
+
+        <div class="search-group">
+            <input type="text" id="searchInput" placeholder="Buscar por pedido, comprador, NF ou SKU..." class="form-control" autocomplete="off">
+        </div>
+        
+        <div class="actions-group">
+            <button id="toggleSelectionBtn" class="btn btn-outline btn-sm">
+                Selecionar Vários
+            </button>
+        </div>
+    </div>
+
+    <div id="bulkActionsToolbar" class="bulk-toolbar">
+        <div class="bulk-info">
+            <span id="selectedCount">0 selecionado(s)</span>
+            <button id="selectAllBtn" class="btn-text btn-sm">Selecionar Tudo na Pág.</button>
+        </div>
+        <div class="bulk-actions">
+            <!--<select id="bulkActionSelect" class="form-control form-control-sm">
+                <option value="" disabled selected>Alterar Situação para...</option>
+                <option value="pendente">Pendente</option>
+                <option value="atrasado">Atrasado</option>
+                <option value="entregue">Entregue</option>
+                <option value="cancelado">Cancelado</option>
+                <option value="limpar">Restaurar Automático</option>
+            </select>-->
+            <select id="bulkActionSelect" class="form-select">
+                <option value="">Selecione uma ação...</option>
+                <option value="pendente">Voltar para: Pendente</option>
+                <option value="separado">Mover para: Separado (Baixa Estoque)</option>
+                <option value="em_romaneio">Mover para: Em Romaneio</option>
+                <option value="enviado">Mover para: Enviado (Gera Relatório)</option>
+                <option value="cancelado">Cancelar Pedido</option>
+            </select>
+            <button id="applyBulkActionBtn" class="btn btn-primary btn-sm">Aplicar</button>
+            <button id="cancelSelectionBtn" class="btn btn-outline btn-sm">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="ordersContainer" class="orders-list-container">
+    <div class="loading-placeholder">
+        <p>Carregando pedidos...</p>
+    </div>
+</div>
+
+<div id="paginationContainer" class="pagination-container"></div>
+
+<script src="/scripts/orders-dashboard.js"></script>

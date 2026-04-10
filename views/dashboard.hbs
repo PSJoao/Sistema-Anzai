@@ -1,0 +1,49 @@
+{{#if user}}
+    <div class="dashboard-header">
+        <h1>Bem-vindo, {{user.username}}!</h1>
+    </div>
+
+    <br>
+    
+    {{#if (eq user.role "admin")}}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Painel de Administração</h3>
+            </div>
+            <div class="card-body">
+                <p>Ações restritas para administradores do sistema.</p>
+                <a href="/admin/users" class="btn btn-primary">Gerir Utilizadores</a>
+                {{! (Futuros links admin aqui) }}
+            </div>
+        </div>
+    {{/if}}
+
+    <div class="card" style="margin-top: 1rem;">
+        <div class="card-header">
+            <h3 class="card-title">Sistema de Expedição</h3>
+        </div>
+        <div class="card-body">
+            <p>Módulos do sistema de expedição</p>
+            <a href="/separacao" class="btn btn-primary">Separação de Produtos</a>
+            <a href="/empacotamento" class="btn btn-primary" style="margin-top: 5px;">Empacotamento de Produtos</a>
+            <a href="/expedicao" class="btn btn-primary" style="margin-top: 5px;">Expedição de Pedidos</a>
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem; text-align: center;">
+        <a href="/auth/logout" class="btn btn-danger">
+            Sair (Logout)
+        </a>
+    </div>
+
+{{else}}
+    <div class="card">
+        <div class="card-body">
+            <div class="form-error">
+                <strong>Erro</strong>
+                <p>Não foi possível carregar os dados do utilizador.</p>
+            </div>
+            <a href="/auth/login" class="btn btn-primary">Voltar para o Login</a>
+        </div>
+    </div>
+{{/if}}

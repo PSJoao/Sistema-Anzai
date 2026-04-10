@@ -1,0 +1,50 @@
+<div class="page-header">
+    <div>
+        <h1>Importar Etiquetas de Pedidos</h1>
+        <p>Carregue as <strong>etiquetas</strong>.</p>
+    </div>
+    <a href="/pedidos" class="btn btn-outline">Voltar para Pedidos</a>
+</div>
+
+{{#if (lookup @root.query "error")}}
+    <div id="page-feedback"
+         data-type="error"
+         data-title="Importação falhou"
+         data-message="{{lookup @root.query "error"}}">
+    </div>
+{{else if (lookup @root.query "success")}}
+    <div id="page-feedback"
+         data-type="success"
+         data-title="Importação concluída"
+         data-message="Processamento concluído. Itens processados: {{lookup @root.query "inserted"}} novos.">
+    </div>
+{{/if}}
+
+<section class="card">
+    <div class="card-body">
+        <form action="/pedidos/upload" method="POST" enctype="multipart/form-data" class="orders-upload-form">
+            <div class="form-group">
+                <label for="plataforma">Plataforma</label>
+                <select id="plataforma" name="plataforma" class="form-control" required>
+                    <option value="" disabled selected>Selecione uma plataforma</option>
+                    {{#each platforms}}
+                        <option value="{{id}}">{{label}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="orderFiles">Arquivos (.txt, .zip, .pdf)</label>
+                <input type="file" id="orderFiles" name="orderFiles" class="form-control" multiple accept=".txt,.zip,.pdf">
+                <small class="form-text">
+                    Aceita: Etiquetas ZPL (.txt, .zip, .pdf).
+                </small>
+            </div>
+
+            <div class="form-footer">
+                <a href="/pedidos" class="btn btn-outline">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Enviar Arquivos</button>
+            </div>
+        </form>
+    </div>
+</section>

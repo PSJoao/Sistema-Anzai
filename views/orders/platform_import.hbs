@@ -1,0 +1,70 @@
+<div class="page-header">
+    <div>
+        <h1>Conciliação via Relatório</h1>
+        <p>Compare o status do sistema com o relatório oficial da plataforma.</p>
+    </div>
+    <a href="/pedidos" class="btn btn-outline">Voltar para Pedidos</a>
+</div>
+
+{{!-- Mensagens de Feedback --}}
+{{#if error}}
+    <div class="alert alert-danger">
+        <strong>Erro:</strong> {{error}}
+    </div>
+{{/if}}
+
+{{#if success}}
+    <div class="alert alert-success">
+        <h4>{{success}}</h4>
+        {{#if results}}
+            <ul class="mt-2 mb-0">
+                <li><strong>Total Analisado:</strong> {{results.total}} linhas processadas.</li>
+                <li><strong>Status Atualizados:</strong> {{results.updated}} pedidos (Corrigidos para Enviado, Entregue ou Cancelado).</li>
+                <li><strong>Divergências de Envio:</strong> {{results.divergences}} pedidos (Marcados como "Não Enviado" no filtro da Dashboard).</li>
+            </ul>
+        {{/if}}
+    </div>
+{{/if}}
+
+<section class="card">
+    <div class="card-body">
+        
+        <div class="alert alert-info">
+            <strong>Instruções de Uso:</strong>
+            <ul class="mb-0">
+                <li>Exporte o relatório de vendas (Excel) da plataforma.</li>
+                <li>O sistema buscará pelo ID do pedido e comparará a situação.</li>
+                <!--<li><strong>Cancelados/Entregues:</strong> Serão atualizados automaticamente no sistema.</li>-->
+                <li><strong>Divergências:</strong> Se o sistema diz "Enviado" mas a plataforma não, o pedido receberá um alerta na Dashboard.</li>
+            </ul>
+        </div>
+
+        <form action="/pedidos/importacao-plataforma" method="POST" enctype="multipart/form-data" class="orders-upload-form mt-4">
+            
+            <div class="form-group">
+                <label for="plataforma">Plataforma de Origem</label>
+                <select id="plataforma" name="plataforma" class="form-control" required>
+                    <option value="" disabled selected>Selecione a plataforma</option>
+                    {{#each platforms}}
+                        <option value="{{id}}">{{label}}</option>
+                    {{/each}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="reportFile">Arquivo do Relatório (.xlsx, .xls)</label>
+                <input type="file" id="reportFile" name="reportFile" class="form-control" accept=".xlsx, .xls" required>
+                <small class="form-text text-muted">
+                    Certifique-se de que o arquivo segue o padrão de colunas da plataforma selecionada.
+                </small>
+            </div>
+
+            <div class="form-footer">
+                <a href="/pedidos" class="btn btn-outline">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="icon-refresh"></i> Processar Conciliação
+                </button>
+            </div>
+        </form>
+    </div>
+</section>

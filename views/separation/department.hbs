@@ -1,0 +1,214 @@
+<style>
+    /* Layout Grid Responsivo */
+    .separation-layout {
+        display: grid;
+        grid-template-columns: 1fr 300px; /* Principal x Lista Lateral */
+        gap: 20px;
+        align-items: start;
+    }
+
+    /* Em telas menores (celular), vira coluna */
+    @media (max-width: 768px) {
+        .separation-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Card da Lista de Pedidos */
+    .orders-list-card {
+        max-height: 500px; /* Limite de altura */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .orders-list-scroll {
+        flex: 1;
+        overflow-y: auto; /* Barra de rolagem própria */
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        border-top: 1px solid #eee;
+    }
+
+    .order-list-item {
+        padding: 10px 15px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.9rem;
+    }
+    
+    .order-list-item:last-child {
+        border-bottom: none;
+    }
+
+    .order-list-header {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .order-list-buyer {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .badge-qty {
+        background: #007bff;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1>Separação - {{departmentName}}</h1>
+        <p>Leia o produto indicado e bipar o código de barras ou SKU para confirmar cada unidade.</p>
+    </div>
+    <a href="/separacao" class="btn btn-outline">Voltar</a>
+</div>
+
+<div class="separation-card-template">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="input-group shadow-sm">
+                    <input type="text" id="globalSeparationInput" class="form-control" placeholder="🔍 Buscar SKU, Pedido, Produto ou EAN neste setor..." aria-label="Buscar produto" autocomplete="off">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" id="btnGlobalSearch" type="button" style="margin-top: 15px;">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br>
+
+<style>
+    .separation-search-bar {
+        background-color: #f4f6f9; /* Mesma cor do fundo para mesclar */
+        padding: 15px 0;
+        border-bottom: 1px solid #e1e4e8;
+        z-index: 1020; /* Garante que fique acima dos cards */
+        margin-bottom: 20px;
+    }
+    
+    /* Ajuste para não quebrar em telas pequenas */
+    @media (max-width: 576px) {
+        .separation-search-bar {
+            padding: 10px 5px;
+        }
+        #globalSeparationInput {
+            font-size: 16px; /* Evita zoom no iPhone */
+        }
+    }
+</style>
+
+<section id="separation-app"
+         class="separation-app"
+         data-department-code="{{departmentCode}}"
+         data-department-name="{{departmentName}}"
+         data-initial-session='{{json session}}'>
+
+    <div class="card separation-card is-empty">
+        <div class="card-body">
+            <p class="muted">A aguardar atribuição de produto pendente...</p>
+        </div>
+    </div>
+
+</section>
+
+<template id="separation-card-template">
+    <div class="separation-layout">
+        
+        <article class="card separation-card">
+            <header class="card-header">
+                <div>
+                    <h3 class="card-title" data-product-name></h3>
+                    <p class="muted">Departamento: <span data-department></span></p>
+                </div>
+                <div class="separation-product-meta">
+                    <span class="meta-label">SKU</span>
+                    <span class="meta-value" data-product-sku></span>
+                </div>
+            </header>
+            <div class="card-body">
+                <div class="separation-counter">
+                    <span class="counter-label">Restam</span>
+                    <span class="counter-value" data-remaining>0</span>
+                    <span class="counter-total">de <span data-total>0</span></span>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" data-progress-fill style="width: 0%"></div>
+                </div>
+
+                <form class="separation-scan-form" data-scan-form autocomplete="off">
+                    <label for="scan-input" class="sr-only">Bipar SKU</label>
+                    <div class="scan-input-wrapper">
+                        <input type="text"
+                               id="scan-input"
+                               class="form-control"
+                               placeholder="Bipe o código..."
+                               data-scan-input
+                               autofocus
+                               autocomplete="off"
+                               inputmode="numeric">
+                        <button type="submit" class="btn btn-primary" data-action="pick">OK</button>
+                    </div>
+                </form>
+                
+                <div class="scan-feedback" data-feedback hidden></div>
+            </div>
+            
+             <footer class="card-footer" style="background: #f8f9fa; border-top: 1px solid #eee; padding: 10px 20px; display: flex; justify-content: space-between; gap: 10px;">
+                <button type="button" class="btn btn-outline-danger btn-sm" data-action="reset">
+                    Reiniciar
+                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn btn-outline btn-sm" data-action="prev" id="btn-prev">
+                        &laquo; Anterior
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" data-action="skip">
+                        Próximo &raquo;
+                    </button>
+                </div>
+            </footer>
+        </article>
+
+        <aside class="card orders-list-card">
+            <div class="card-header" style="padding: 15px; background: #fff; border-bottom: none;">
+                <h4 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                    📋 Pedidos na Fila
+                </h4>
+                <small class="text-muted">Pedidos aguardando este item</small>
+            </div>
+            
+            <ul class="orders-list-scroll" data-order-list>
+                </ul>
+        </aside>
+
+    </div>
+</template>
+
+<template id="separation-finished-template">
+    <article class="card separation-card is-complete">
+        <div class="card-body">
+            <h3>Produto concluído!</h3>
+            <p class="muted">Todas as unidades pendentes foram separadas. Aguarde um novo produto ou solicite o próximo.</p>
+        </div>
+        <footer class="card-footer">
+            <button type="button" class="btn btn-primary" data-action="request-next">Buscar próximo produto</button>
+        </footer>
+    </article>
+</template>
+
+<script src="/scripts/separation.js"></script>

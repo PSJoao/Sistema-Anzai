@@ -1,0 +1,75 @@
+<div class="page-header">
+    <div>
+        <h1>Importar Medidas de Embalagem</h1>
+        <p>Atualize a base de dados de dimensões e pesos para conferência.</p>
+    </div>
+    <a href="/pedidos/packaging/conference" class="btn btn-outline">Voltar para Conferência</a>
+</div>
+
+<section class="card form-card-container">
+    <div class="card-body">
+        
+        <div class="alert alert-info">
+            <strong>Regras do Arquivo:</strong>
+            <ul class="mb-0 pl-3">
+                <li>Formato aceito: <strong>.xlsx</strong> ou <strong>.xls</strong>.</li>
+                <li>A leitura começa a partir da <strong>Linha 2</strong>.</li>
+                <li><strong>Coluna A:</strong> Código do Anúncio (MLB...)</li>
+                <li><strong>Coluna B:</strong> Altura </li>
+                <li><strong>Coluna C:</strong> Comprimento </li>
+                <li><strong>Coluna D:</strong> Largura </li>
+                <li><strong>Coluna E:</strong> Peso </li>
+            </ul>
+        </div>
+
+        <form id="uploadForm" class="orders-upload-form mt-4">
+            
+            <div class="form-group">
+                <label for="packagingFile">Selecione a Planilha</label>
+                <input type="file" id="packagingFile" name="file" class="form-control" accept=".xlsx, .xls" required>
+            </div>
+
+            <div class="form-footer">
+                <button type="submit" class="btn btn-primary" id="btnSubmit">
+                    <i class="icon-upload"></i> Enviar e Atualizar
+                </button>
+            </div>
+        </form>
+        
+        <div id="uploadFeedback" class="mt-3"></div>
+    </div>
+</section>
+
+<script>
+    // Script inline simples apenas para o envio via AJAX desta página específica
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmit');
+        const feedback = document.getElementById('uploadFeedback');
+        const formData = new FormData(e.target);
+
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:5px;"></div> Processando...';
+        feedback.innerHTML = '';
+
+        try {
+            const response = await fetch('/pedidos/packaging/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                feedback.innerHTML = `<div class="alert alert-success">${result.message}</div>`;
+                e.target.reset();
+            } else {
+                feedback.innerHTML = `<div class="alert alert-danger"><strong>Erro:</strong> ${result.error}</div>`;
+            }
+        } catch (err) {
+            feedback.innerHTML = `<div class="alert alert-danger">Erro de conexão. Tente novamente.</div>`;
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="icon-upload"></i> Enviar e Atualizar';
+        }
+    });
+</script>

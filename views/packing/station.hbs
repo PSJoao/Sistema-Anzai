@@ -1,0 +1,255 @@
+{{! views/packing/station.hbs }}
+<div class="page-header">
+    <div>
+        <h1>Estação de Empacotamento</h1>
+        <p>Bipe qualquer produto separado para iniciar o empacotamento automaticamente.</p>
+    </div>
+    <a href="/" class="btn btn-outline">Voltar ao Menu</a>
+</div>
+
+{{!-- WRAPPER DE LAYOUT (GRID) --}}
+<div class="packing-layout">
+
+    {{!-- SUA SEÇÃO ORIGINAL (Mantida, apenas envolvida) --}}
+    <section id="packing-app"
+             class="separation-app"
+             data-initial-session='{{json session}}'>
+        <div class="card separation-card is-empty">
+            <div class="card-body">
+                <p class="muted">Carregando...</p>
+            </div>
+        </div>
+    </section>
+
+    {{!-- NOVA SIDEBAR: Lista de Pedidos --}}
+    <aside class="packing-sidebar">
+        <div class="card queue-card">
+            <div class="card-header queue-header">
+                <div>
+                    <h5 style="margin:0; font-size:1rem;">Fila (<span id="queue-total-counter">0</span>)</h5>
+                    <small class="text-muted">Prontos para embalar</small>
+                </div>
+            </div>
+            
+            <div class="queue-list-container">
+                <ul id="packing-queue-list" class="queue-list">
+                    {{!-- O JS vai preencher aqui --}}
+                </ul>
+                
+                <div id="queue-empty-state" class="text-center p-3 text-muted" style="display: none;">
+                    <small>Nenhum pedido pendente.</small>
+                </div>
+            </div>
+            
+            {{!-- Dados iniciais invisíveis --}}
+            <div id="initial-queue-data" style="display:none;">{{initialQueue}}</div>
+        </div>
+    </aside>
+
+</div>
+
+{{! Template para o card principal de empacotamento (Sessão Ativa) }}
+<template id="packing-card-template">
+    <article class="card separation-card">
+        <header class="card-header">
+            <div>
+                <h3 class="card-title">Pedido <span data-order-number></span></h3>
+                <p class="muted">Comprador: <span data-order-buyer></span></p>
+            </div>
+        </header>
+        
+        <div class="card-body">
+            <p><strong>Itens do Pedido:</strong></p>
+            <ul class="packing-item-list" data-item-list>
+                {{! JS irá preencher esta lista }}
+            </ul>
+        </div>
+
+        <div class="card-body has-top-border">
+            <form class="separation-scan-form" data-scan-form autocomplete="off">
+                <label for="scan-input" class="sr-only">Bipar SKU</label>
+                <div class="scan-input-wrapper">
+                    <input type="text"
+                           id="scan-input"
+                           class="form-control"
+                           placeholder="Bipe o código do produto"
+                           data-scan-input
+                           autofocus
+                           autocomplete="off"
+                           inputmode="numeric"
+                           aria-label="Bipar SKU">
+                    <button type="submit" class="btn btn-primary" data-action="pack">Confirmar</button>
+                </div>
+            </form>
+            <div class="scan-feedback" data-feedback hidden></div>
+        </div>
+
+        <footer class="card-footer" style="justify-content: flex-start; border-top: 1px solid #eee; margin-top: 10px;">
+             <button type="button" class="btn btn-outline-danger" data-action="cancel">Cancelar / Devolver à Fila</button>
+        </footer>
+    </article>
+</template>
+
+{{! Template para um item na lista de produtos do card }}
+<template id="packing-item-template">
+     <li class="packing-item" data-sku-item>
+        <span class="packing-item-status" data-status-icon></span>
+        <div class="packing-item-info">
+            <span class="packing-item-name" data-item-name></span>
+            <span class="packing-item-sku muted" data-item-sku></span>
+        </div>
+        <span class="packing-item-counter" data-item-counter>
+            <span data-scanned-count></span> / <span data-needed-count></span>
+        </span>
+    </li>
+</template>
+
+{{! Template para o card de pedido finalizado }}
+<template id="packing-finished-template">
+    <article class="card separation-card is-complete">
+        <div class="card-body" style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🖨️</div>
+            <h3>Pedido Concluído!</h3>
+            <p class="muted" data-order-number-finished></p>
+            <p>A etiqueta de envio foi aberta para impressão.</p>
+        </div>
+        <footer class="card-footer" style="justify-content: center;">
+            <button type="button" class="btn btn-primary" data-action="request-next">Bipar Próximo Produto</button>
+        </footer>
+    </article>
+</template>
+
+{{!-- NOVO TEMPLATE: Item da Fila Lateral --}}
+<template id="queue-item-template">
+    <li class="queue-item">
+        <div class="q-top">
+            <strong class="q-order" data-q-order></strong>
+            <span class="badge" data-q-date-badge></span>
+        </div>
+        <div class="q-buyer" data-q-buyer></div>
+        
+        <div class="q-products-container">
+            <ul class="q-prod-list" data-q-prod-list>
+                </ul>
+        </div>
+        <div class="q-info" style="display: none;">
+            <span data-q-store></span> &bull; <span data-q-items></span> un. total
+        </div>
+        <div class="q-nf" data-q-nf></div>
+    </li>
+</template>
+
+{{!-- ESTILOS ESPECÍFICOS DO LAYOUT --}}
+<style>
+    /* Cria o Grid: Conteúdo Principal (auto) + Sidebar (300px) */
+    .packing-layout {
+        display: grid;
+        /* Aumentado de 300px para 380px para caber melhor os nomes dos produtos */
+        grid-template-columns: 1fr 380px; 
+        gap: 25px;
+        align-items: start;
+        min-height: 500px;
+    }
+
+    /* Telas Full HD ou maiores (Wide): Aumenta ainda mais a lista */
+    @media (min-width: 1600px) {
+        .packing-layout {
+            grid-template-columns: 1fr 450px; /* Lista bem larga em monitores grandes */
+        }
+    }
+
+    /* Ajuste para Mobile: Vira uma coluna só */
+    @media (max-width: 992px) {
+        .packing-layout {
+            grid-template-columns: 1fr;
+        }
+        .packing-sidebar {
+            order: 2; /* Joga a lista para baixo no celular */
+        }
+    }
+
+    /* Estilos da Sidebar */
+    .queue-card {
+        height: calc(100vh - 150px); /* Tenta ocupar a altura da tela */
+        max-height: 800px;
+        display: flex;
+        flex-direction: column;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .queue-header {
+        background: #fff;
+        border-bottom: 1px solid #eee;
+        padding: 10px 15px;
+    }
+
+    .queue-list-container {
+        flex: 1;
+        overflow-y: auto; /* Scroll apenas na lista */
+        background: #f8f9fa;
+        padding: 10px;
+    }
+
+    .queue-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Cardzinho do Pedido na Fila */
+    .queue-item {
+        background: #fff;
+        border: 1px solid #e1e4e8;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 8px;
+        border-left: 4px solid transparent; /* Faixa de status */
+        transition: transform 0.1s;
+    }
+
+    /* Adicione dentro da tag <style> existente */
+
+    .q-products-container {
+        background: #f8f9fa;
+        border-radius: 4px;
+        padding: 6px;
+        margin: 6px 0;
+        border: 1px solid #eee;
+    }
+
+    .q-prod-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.8rem;
+        color: #444;
+    }
+
+    .q-prod-list li {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
+        line-height: 1.3;
+    }
+    
+    .q-prod-list strong {
+        color: var(--primary-color);
+    }
+
+    /* Cores de Urgência */
+    .queue-item.status-delayed { border-left-color: #dc3545; } /* Vermelho */
+    .queue-item.status-today { border-left-color: #ffc107; }   /* Amarelo */
+    .queue-item.status-future { border-left-color: #28a745; }  /* Verde */
+
+    /* Tipografia do Cardzinho */
+    .q-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .q-order { color: #333; font-size: 0.95rem; }
+    .q-buyer { font-size: 0.85rem; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+    .q-info { font-size: 0.75rem; color: #777; }
+    .q-nf { font-size: 0.7rem; color: #999; text-align: right; margin-top: 2px; }
+</style>
+
+{{! Script JS para esta página }}
+<script src="/scripts/packing.js"></script>

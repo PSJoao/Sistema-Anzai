@@ -1,0 +1,132 @@
+<div class="page-header">
+    <div>
+        <h1>Expedição e Conferência</h1>
+        <p>Bipe o código do pedido ou nota fiscal para confirmar a saída.</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="/expedicao/romaneios" class="btn btn-outline">Histórico de Romaneios</a>
+    </div>
+</div>
+
+{{#if error}}
+    <div class="card">
+        <div class="card-body">
+            <div class="form-error">{{error}}</div>
+        </div>
+    </div>
+{{/if}}
+
+<section class="shipping-app">
+    <!-- Lista de Pedidos Pendentes para Expedição -->
+    <div class="shipping-list-header">
+        <h3>Pedidos Pendentes para Expedição</h3>
+        <span class="pending-count">{{pendingOrders.length}} pedido(s) aguardando conferência</span>
+    </div>
+
+    <div class="table-container">
+        <table class="modern-table" id="pending-orders-table">
+            <thead>
+                <tr>
+                    <th>Loja</th>
+                    <th>Pedido</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each pendingOrders}}
+                    <tr data-pedido="{{numero_venda}}">
+                        <td>
+                            {{#if codigo_empresa}}
+                                <span class="badge" style="background:#eee; color:#333; border:1px solid #ddd;">
+                                    {{codigo_empresa}}
+                                </span>
+                            {{else}}
+                                <span class="text-muted">-</span>
+                            {{/if}}
+                        </td>
+                        <td><strong>{{numero_venda}}</strong></td>
+                        <td>
+                            <span class="status-badge inactive">Pendente</span>
+                        </td>
+                    </tr>
+                {{else}}
+                    <tr id="pending-empty-row">
+                        <td colspan="2">Nenhum pedido pendente para expedição no momento.</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Área de Bipagem -->
+    <div class="card">
+        <div class="card-body">
+            <form id="shipping-scan-form" class="separation-scan-form" autocomplete="off">
+                <label for="scan-input" class="sr-only">Bipar Pedido/NF</label>
+                <div class="scan-input-wrapper">
+                    <input type="text"
+                           id="scan-input"
+                           class="form-control"
+                           placeholder="Bipe o código do pedido ou NF..."
+                           autofocus
+                           autocomplete="off">
+                    <button type="submit" class="btn btn-primary">Conferir</button>
+                </div>
+            </form>
+            <div id="scan-feedback" class="scan-feedback" hidden></div>
+        </div>
+    </div>
+
+    <!-- Lista de Pedidos Conferidos (Na Mesa) -->
+    <div class="shipping-list-header" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+        <div>
+            <h3>Envios Realizados</h3>
+            <p class="text-muted" style="margin: 0; font-size: 0.9rem;">
+                Estes pedidos já constam como <strong>Enviados</strong>. Gere o relatório para limpar a lista.
+            </p>
+        </div>
+        
+        {{#if checkedOrders.length}}
+            {{!-- Botão agora foca em GERAR O RELATÓRIO, pois o envio já foi feito --}}
+            <button id="finalize-batch-btn" class="btn btn-primary">
+                <i class="fas fa-file-pdf"></i> Gerar Relatório Agora ({{checkedOrders.length}})
+            </button>
+        {{else}}
+            <button id="finalize-batch-btn" class="btn btn-outline" disabled>
+                <i class="fas fa-file-pdf"></i> Gerar Relatório
+            </button>
+        {{/if}}
+    </div>
+
+    <div class="table-container">
+        <table class="modern-table" id="checked-orders-table">
+            <thead>
+                <tr>
+                    <th>Pedido</th>
+                    <th>Enviado em</th> {{!-- Mudamos o texto do cabeçalho --}}
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each checkedOrders}}
+                    <tr>
+                        <td><strong>{{numero_venda}}</strong></td>
+                        <td>{{formatDate conferido_em}}</td>
+                        <td>
+                            {{!-- Badge verde indicando que já foi enviado --}}
+                            <span class="status-badge success">Enviado</span>
+                        </td>
+                    </tr>
+                {{else}}
+                    <tr id="empty-row">
+                        <td colspan="3" class="text-muted text-center py-4">
+                            Nenhum envio realizado nesta sessão ainda.
+                        </td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script src="/scripts/shipping.js"></script>

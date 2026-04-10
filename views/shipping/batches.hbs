@@ -1,0 +1,42 @@
+<div class="page-header">
+    <div>
+        <h1>Histórico de Romaneios</h1>
+        <p>Visualize e baixe os relatórios de envios passados.</p>
+    </div>
+    <a href="/expedicao" class="btn btn-outline">Voltar para Conferência</a>
+</div>
+
+<div class="table-container">
+    <table class="modern-table">
+        <thead>
+            <tr>
+                <th>Número do Romaneio</th>
+                <th>Data de Fechamento</th>
+                <th>Responsável</th>
+                <th>Qtd. Pedidos</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each batches}}
+                <tr>
+                    <td><strong>{{batch_number}}</strong></td>
+                    <td>{{formatDate created_at}}</td>
+                    <td>{{responsavel}}</td>
+                    <td>{{total_pedidos_unicos}}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="/expedicao/romaneio/{{id}}/pdf" target="_blank" class="btn btn-outline">
+                                Baixar PDF
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {{else}}
+                <tr>
+                    <td colspan="5">Nenhum romaneio gerado até o momento.</td>
+                </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>

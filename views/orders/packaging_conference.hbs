@@ -1,0 +1,122 @@
+<style>
+    /* Estilos Específicos para a Conferência Responsiva */
+    .packaging-grid {
+        display: grid;
+        /* Desktop: Tenta colocar todos lado a lado.
+           Mobile: Quebra automaticamente mantendo no mínimo 140px por card.
+           Isso garante um visual 2x2 em celulares e 4x1 em monitores.
+        */
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+
+    .counter-value {
+        font-size: 2.5rem; /* Tamanho padrão desktop */
+    }
+
+    /* Ajustes para Mobile */
+    @media (max-width: 600px) {
+        .counter-value {
+            font-size: 1.8rem; /* Reduz um pouco o número */
+        }
+        .packaging-grid {
+            gap: 0.5rem; /* Menos espaço entre cards no mobile */
+        }
+        .separation-counter {
+            flex-direction: column; /* Empilha Label e Valor no mobile para economizar largura */
+            align-items: flex-start;
+        }
+        .scan-input-wrapper {
+            flex-direction: column; /* Input e botão limpar empilhados no mobile */
+        }
+        .scan-input-wrapper button {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1>Conferência de Embalagem</h1>
+        <p>Bipe o código do anúncio (QR Code MLB) para ver as medidas.</p>
+    </div>
+    <div class="page-header-actions">
+        {{#if isAdmin}}
+        <a href="/pedidos/packaging/upload" class="btn btn-outline" title="Atualizar Base de Medidas">
+            Importar Planilha
+        </a>
+        {{/if}}
+        <a href="/pedidos/return/conference" class="btn btn-primary" title="Resolver Devoluções">
+            Conferir Devolução
+        </a>
+        <a href="/pedidos" class="btn btn-outline">Voltar</a>
+    </div>
+</div>
+
+<div class="container" style="max-width: 800px;">
+    
+    <section class="card mb-4">
+        <div class="card-body">
+            <div class="form-group mb-0">
+                <label for="mlbInput" style="font-size: 1.2rem;">Bipar Código do Anúncio (MLB)</label>
+                <div class="scan-input-wrapper">
+                    <input type="text" id="mlbInput" class="form-control" placeholder="Aguardando leitura..." autofocus autocomplete="off" style="font-size: 1.5rem; height: 60px;">
+                    <button id="btnClear" class="btn btn-outline" type="button">Limpar</button>
+                </div>
+                <small class="form-text text-muted mt-2">
+                    Certifique-se de que o campo acima esteja selecionado antes de bipar.
+                </small>
+            </div>
+        </div>
+    </section>
+    <br> <br>
+    <section id="resultArea" class="card" style="display: none; border-left: 6px solid var(--primary-color);">
+        <div class="card-header">
+            <h2 class="card-title" id="resultTitle" style="font-size: 1.5rem; color: var(--primary-color);">
+                </h2>
+        </div>
+        <div class="card-body">
+            
+            <div class="separation-department-grid" style="grid-template-columns: 1fr 1fr;">
+                
+                <div class="separation-counter">
+                    <span class="counter-label">Altura:</span>
+                    <span class="counter-value" id="resAltura">0</span>
+                    <span class="counter-unit">cm</span>
+                </div>
+
+                <div class="separation-counter">
+                    <span class="counter-label">Largura:</span>
+                    <span class="counter-value" id="resLargura">0</span>
+                    <span class="counter-unit">cm</span>
+                </div>
+
+                <div class="separation-counter">
+                    <span class="counter-label">Comprimento:</span>
+                    <span class="counter-value" id="resComprimento">0</span>
+                    <span class="counter-unit">cm</span>
+                </div>
+
+                <div class="separation-counter">
+                    <span class="counter-label">Peso:</span>
+                    <span class="counter-value" id="resPeso">0</span>
+                    <span class="counter-unit">g</span>
+                </div>
+
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <p class="mb-0 text-success" style="font-weight: bold; font-size: 1.1rem;">
+                <i class="icon-check"></i> Medidas encontradas com sucesso.
+            </p>
+        </div>
+    </section>
+
+    <div id="emptyState" class="text-center mt-5 text-muted">
+        <i class="icon-box" style="font-size: 4rem; color: var(--border-color);"></i>
+        <p class="mt-3">Aguardando bipagem para exibir informações...</p>
+    </div>
+
+</div>
+
+<script src="/scripts/packaging-conference.js"></script>
