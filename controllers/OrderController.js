@@ -13,6 +13,7 @@ const STATUS_LABELS = {
   enviado: 'Enviados',
   entregue: 'Entregues',
   cancelado: 'Cancelados',
+  sem_enviar: 'Sem Enviar',
   
   // Status de Exceção / Pós-Venda
   nao_entregue: 'Não Entregue',

@@ -370,7 +370,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'nao_entregue': stats.count_nao_entregue,
             'venda_concretizada': stats.count_venda_concretizada,
             'dev_resolvido': stats.count_dev_resolvido,
-            'dev_nao_resolvido': stats.count_dev_nao_resolvido
+            'dev_nao_resolvido': stats.count_dev_nao_resolvido,
+            'sem_enviar': stats.count_sem_enviar,
         };
 
         elements.statsCounters.forEach(span => {
@@ -718,7 +719,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'venda_concretizada',
             'devolucao_analise',
             'devolucao_concluida',
-            'nao_entregue'
+            'nao_entregue',
+            'sem_enviar'
         ];
 
         // Regra: Não mostra nenhum filtro de prazo.

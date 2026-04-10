@@ -185,7 +185,7 @@ const SQL_CONDITION_HOJE = `
       -- Prioridade 2: Não tem coleta, mas o PRAZO LIMITE é HOJE
       (data_envio_limite IS NULL AND data_coleta_agendada::date = CURRENT_DATE)
     )
-    AND status_bucket NOT IN ('cancelado', 'enviado', 'entregue', 'devolucao_concluida', 'nao_entregue', 'devolucao_analise', 'venda_concretizada')
+    AND status_bucket NOT IN ('cancelado', 'enviado', 'entregue', 'devolucao_concluida', 'nao_entregue', 'devolucao_analise', 'venda_concretizada', 'sem_enviar')
   )
 `;
 
@@ -201,7 +201,7 @@ const SQL_CONDITION_ATRASADOS = `
       -- Prioridade 2: Sem coleta, e PRAZO LIMITE já passou
       (data_envio_limite IS NULL AND data_coleta_agendada::date < CURRENT_DATE)
     )
-    AND status_bucket NOT IN ('cancelado', 'enviado', 'entregue', 'devolucao_concluida', 'nao_entregue', 'devolucao_analise', 'venda_concretizada')
+    AND status_bucket NOT IN ('cancelado', 'enviado', 'entregue', 'devolucao_concluida', 'nao_entregue', 'devolucao_analise', 'venda_concretizada', 'sem_enviar')
   )
 `;
 
@@ -217,7 +217,7 @@ const SQL_CONDITION_FUTUROS = `
       -- Prioridade 2: Sem coleta, e PRAZO LIMITE é FUTURO
       (data_envio_limite IS NULL AND data_coleta_agendada::date > CURRENT_DATE)
     )
-    AND status_bucket NOT IN ('cancelado', 'enviado', 'entregue', 'devolucao_concluida', 'nao_entregue', 'devolucao_analise', 'venda_concretizada')
+    AND status_bucket NOT IN ('cancelado', 'enviado', 'entregue', 'devolucao_concluida', 'nao_entregue', 'devolucao_analise', 'venda_concretizada', 'sem_enviar')
   )
 `;
 
@@ -230,7 +230,7 @@ const SQL_CONDITION_AGENDADOS = `
       data_coleta_agendada IS NOT NULL 
       AND data_coleta_agendada::date > CURRENT_DATE
     )
-    AND status_bucket NOT IN ('cancelado', 'enviado', 'entregue', 'devolucao_concluida', 'nao_entregue', 'devolucao_analise', 'venda_concretizada')
+    AND status_bucket NOT IN ('cancelado', 'enviado', 'entregue', 'devolucao_concluida', 'nao_entregue', 'devolucao_analise', 'venda_concretizada', 'sem_enviar')
   )
 `;
 
@@ -426,6 +426,7 @@ const MercadoLivreOrder = {
         COUNT(*) FILTER (WHERE (situacao_manual = 'em_romaneio' OR (situacao_manual IS NULL AND status_bucket = 'em_romaneio'))) AS count_em_romaneio,
         COUNT(*) FILTER (WHERE (situacao_manual = 'enviado' OR (situacao_manual IS NULL AND status_bucket = 'enviado'))) AS count_enviado,
         COUNT(*) FILTER (WHERE ${SQL_CONDITION_CANCELADOS}) AS count_cancelados,
+        COUNT(*) FILTER (WHERE (situacao_manual = 'sem_enviar' OR (situacao_manual IS NULL AND status_bucket = 'sem_enviar'))) AS count_sem_enviar,
 
         COUNT(*) FILTER (WHERE (situacao_manual = 'devolucao_analise' OR (situacao_manual IS NULL AND status_bucket = 'devolucao_analise'))) AS count_devolucao_analise,
         COUNT(*) FILTER (WHERE (situacao_manual = 'devolucao_concluida' OR (situacao_manual IS NULL AND status_bucket = 'devolucao_concluida'))) AS count_devolucao_concluida,
