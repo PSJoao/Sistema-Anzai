@@ -892,7 +892,7 @@ const HubOrderService = {
                                     id_envio_dev = $2,
                                     status_dev_api = $3,
                                     status_envio_dev_api = $4,
-                                    status_bucket = $5,
+                                    status_bucket = COALESCE($5, status_bucket),
                                     dev_historico = $6,
                                     frete_envio = $8,
                                     updated_at = NOW()
@@ -902,7 +902,7 @@ const HubOrderService = {
                                 hubData.id_envio_dev ? String(hubData.id_envio_dev) : null, 
                                 hubData.status_dev ? String(hubData.status_dev) : null, 
                                 hubData.status_envio_dev ? String(hubData.status_envio_dev) : null, 
-                                novoStatusBucket,
+                                novoStatusBucket !== order.status_bucket ? novoStatusBucket : null,
                                 novoDevHistorico,
                                 String(order.numero_venda),
                                 frete_envio

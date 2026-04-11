@@ -21,7 +21,7 @@ const SchedulerService = {
         // Frequência: A cada 50 minutos
         // Expressão Cron: "*/1 * * * *"
         // ==============================================================================
-        cron.schedule('*/1 * * * *', async () => {
+        cron.schedule('*/50 * * * *', async () => {
             // 1. Verifica se já está rodando
             if (travaPedidos) {
                 console.log('[Scheduler] Sincronização de PEDIDOS abortada: Rotina anterior ainda em execução.');
