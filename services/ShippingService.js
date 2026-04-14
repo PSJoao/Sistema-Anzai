@@ -15,9 +15,23 @@ const ShippingService = {
 
   // Marca um pedido como conferido
   async checkOrder(term) {
-    // Verifica se o pedido existe e está pronto
-    const order = await MercadoLivreOrder.findReadyForShipping(term);
-    
+    const cleanTerm = String(term).trim();
+
+    // 1. Tenta busca direta (termo como veio do scanner)
+    let order = await MercadoLivreOrder.findReadyForShipping(cleanTerm);
+
+    // 2. FALLBACK INTELIGENTE: Se não achou e o termo é puramente numérico,
+    //    tenta adicionar os prefixos conhecidos das plataformas.
+    if (!order && /^\d+$/.test(cleanTerm)) {
+      // Tenta prefixo Mercado Livre
+      order = await MercadoLivreOrder.findReadyForShipping(`MLB_SHML${cleanTerm}`);
+
+      // Tenta prefixo Shopee
+      if (!order) {
+        order = await MercadoLivreOrder.findReadyForShipping(`SHP_${cleanTerm}`);
+      }
+    }
+
     if (!order) {
       throw new Error(`Pedido "${term}" não encontrado na lista de expedição. Verifique se o código está correto ou se o pedido já foi enviado.`);
     }
