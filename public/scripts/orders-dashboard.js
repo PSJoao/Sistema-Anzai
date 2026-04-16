@@ -14,12 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
         devHistorico: 'todos',
         search: '',
         flexFilter: false,
-        startDate: '', 
-        endDate: '',   
+        startDate: '',
+        endDate: '',
         mediationFilter: 'todos',
-        selectionMode: false, 
+        selectionMode: false,
         plataforma: 'mercado_livre',
-        selectedIds: new Set() 
+        selectedIds: new Set()
     };
 
     // Referências ao DOM
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function init() {
         bindEvents();
-        
+
         // Lê URL Params para restaurar estado
         const params = new URLSearchParams(window.location.search);
         if (params.has('status')) state.statusFilter = params.get('status');
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (params.has('mediation')) {
             state.mediationFilter = params.get('mediation');
-            if(elements.mediationSelect) elements.mediationSelect.value = state.mediationFilter;
+            if (elements.mediationSelect) elements.mediationSelect.value = state.mediationFilter;
         }
 
         if (params.has('plataforma')) {
@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchOrders();
             }, 400); // 400ms delay
         });
-        
+
         if (elements.divergenceCheckbox) {
             elements.divergenceCheckbox.addEventListener('change', (e) => {
                 state.divergenceFilter = e.target.checked;
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Modo Seleção
         elements.toggleSelectionBtn.addEventListener('click', toggleSelectionMode);
         elements.cancelSelectionBtn.addEventListener('click', disableSelectionMode);
-        
+
         // Selecionar Todos (da página atual)
         elements.selectAllBtn.addEventListener('click', toggleSelectAllCurrentPage);
 
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchOrders() {
         setLoading(true);
-        
+
         try {
             // Envia os DOIS filtros para o back-end
             const params = new URLSearchParams({
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('Erro ao buscar pedidos');
 
             const data = await response.json();
-            
+
             // Renderiza
             renderOrders(data.orders);
             renderPagination(data.pagination);
@@ -269,11 +269,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.activeStartDate && data.activeStartDate !== state.startDate) {
                 state.startDate = data.activeStartDate;
-                if(elements.startDateInput) elements.startDateInput.value = data.activeStartDate;
+                if (elements.startDateInput) elements.startDateInput.value = data.activeStartDate;
             }
             if (data.activeEndDate && data.activeEndDate !== state.endDate) {
                 state.endDate = data.activeEndDate;
-                if(elements.endDateInput) elements.endDateInput.value = data.activeEndDate;
+                if (elements.endDateInput) elements.endDateInput.value = data.activeEndDate;
             }
 
             // Atualiza URL sem recarregar (History API)
@@ -296,9 +296,9 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.filterButtons.forEach(btn => {
             const type = btn.dataset.filterType;
             const value = btn.dataset.value;
-            
+
             let isActive = false;
-            
+
             if (type === 'status') {
                 isActive = (value === state.statusFilter);
             } else if (type === 'date') {
@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (state.plataforma === 'shopee') {
             elements.flexFilterContainer.style.display = 'none';
-            
+
             // Segurança: Se o filtro Flex estivesse ativo, nós desligamos para não bugar a busca
             if (state.flexFilter) {
                 state.flexFilter = false;
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             // O padrão do Bootstrap/Layout é 'block' ou 'flex'
-            elements.flexFilterContainer.style.display = 'flex'; 
+            elements.flexFilterContainer.style.display = 'flex';
         }
     }
 
@@ -350,14 +350,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateStats(stats) {
         if (!stats) return;
-        
+
         const map = {
             // Fluxo Operacional
             'pendente': stats.count_pendente,
             'separado': stats.count_separado,
             'em_romaneio': stats.count_em_romaneio,
             'enviado': stats.count_enviado,
-            
+
             // Prazos / Datas
             'hoje': stats.count_hoje,
             'atrasados': stats.count_atrasados,
@@ -405,12 +405,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.ordersContainer.innerHTML = orders.map(order => {
             const isSelected = state.selectedIds.has(String(order.id));
-            
+
             // Badge Manual
-            const manualBadge = order.situacao_manual 
-                ? `<span class="badge badge-manual" title="Definido Manualmente">Manual: ${order.situacao_manual}</span>` 
+            const manualBadge = order.situacao_manual
+                ? `<span class="badge badge-manual" title="Definido Manualmente">Manual: ${order.situacao_manual}</span>`
                 : '';
-            
+
             // Formatação de Dados
             const nomeComprador = sanitizeBuyerName(order.comprador);
             const skus = order.lista_skus || 'Sem SKU';
@@ -420,14 +420,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // --- LÓGICA DO BOTÃO DE ETIQUETA ---
             // Só aparece se estiver no status 'em_romaneio' (Embalado)
             const showLabelButton = order.status_bucket === 'em_romaneio';
-            const labelButtonHtml = showLabelButton 
+            const labelButtonHtml = showLabelButton
                 ? `<a href="/empacotamento/etiqueta/${order.numero_venda}" 
                       target="_blank" 
                       class="btn btn-sm btn-outline btn-print-label" 
                       title="Gerar Etiqueta de Envio"
                       onclick="event.stopPropagation()">
                       Gerar Etiqueta
-                   </a>` 
+                   </a>`
                 : '';
             // ------------------------------------
 
@@ -453,13 +453,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     
                     <div class="order-info-main">
-                        <div class="order-header-row">
-                            <span class="order-number">#${order.numero_venda}</span>
-                            <span class="order-status-badge status-${order.status_bucket}">${order.status_bucket}</span>
-                            ${empacotadorName}
-                            ${manualBadge}
-                            ${mediationBadge}
-                            <span class="detail-value">${order.desc_status || ''}</span>
+                        <div class="order-header-row" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div class="header-left">
+                                <span class="order-number">#${order.numero_venda}</span>
+                                <span class="order-status-badge status-${order.status_bucket}">${order.status_bucket}</span>
+                                ${empacotadorName}
+                                ${manualBadge}
+                                ${mediationBadge}
+                                <span class="detail-value">${order.desc_status || ''}</span>
+                            </div>
                         </div>
                         
                         <div class="order-details-block">
@@ -509,10 +511,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="fiscal-group">
                             <span class="detail-label">Nota Fiscal:</span>
-                            ${order.nfe_numero 
-                                ? `<span class="nfe-tag">${order.nfe_numero}</span>` 
-                                : `<span class=\"nfe-missing\">Pendente</span>`}
+                            ${order.nfe_numero
+                    ? `<span class="nfe-tag">${order.nfe_numero}</span>`
+                    : `<span class=\"nfe-missing\">Pendente</span>`}
                         </div>
+                    </div>
+
+                    <div class="header-dates-right" style="text-align: right; font-size: 0.85rem; color: #6c757d; white-space: nowrap; margin-left: 10px;">
+                        ${order.data_venda ? `<div style="margin-bottom: 2px;">Venda: <strong style="color: #343a40;">${formatDateFull(order.data_venda)}</strong></div>` : ''}
+                        ${order.data_acao ? `<div>Ação: <strong style="color: #343a40;">${formatDateFull(order.data_acao)}</strong></div>` : ''}
                     </div>
 
                     <div class="order-actions">
@@ -543,7 +550,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!dateString) return false;
         const date = new Date(dateString);
         const today = new Date();
-        today.setHours(0,0,0,0);
+        today.setHours(0, 0, 0, 0);
         return date < today;
     }
 
@@ -579,14 +586,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleSelectionMode() {
         state.selectionMode = !state.selectionMode;
-        
+
         // Referência ao container pai da toolbar
         const toolbarContainer = document.querySelector('.dashboard-toolbar');
 
         if (state.selectionMode) {
             // Adiciona classe ao PAI para controlar o layout via CSS
             toolbarContainer.classList.add('selection-active');
-            
+
             elements.toggleSelectionBtn.style.display = 'none';
             document.querySelectorAll('.order-selection-checkbox').forEach(el => el.classList.add('visible'));
         } else {
@@ -598,13 +605,13 @@ document.addEventListener('DOMContentLoaded', () => {
         state.selectionMode = false;
         state.selectedIds.clear(); // Limpa seleção ao sair
         updateSelectionCounter();
-        
+
         // Remove classe do PAI
         const toolbarContainer = document.querySelector('.dashboard-toolbar');
         if (toolbarContainer) toolbarContainer.classList.remove('selection-active');
 
         elements.toggleSelectionBtn.style.display = 'inline-flex';
-        
+
         document.querySelectorAll('.order-selection-checkbox').forEach(el => el.classList.remove('visible'));
         document.querySelectorAll('.order-card-row.selected').forEach(el => el.classList.remove('selected'));
         document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = false);
@@ -613,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleSelectAllCurrentPage() {
         const checkboxes = document.querySelectorAll('.order-checkbox');
         const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-        
+
         checkboxes.forEach(cb => {
             // Se nem todos estão marcados, marca todos. Se todos estão, desmarca.
             if (!allChecked && !cb.checked) cb.click();
@@ -702,19 +709,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
     }
 
+    function formatDateFull(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
     /**
      * Controla quais filtros de data aparecem com base no fluxo selecionado.
      */
     function updateDateFiltersVisibility() {
         const status = state.statusFilter;
         const dateGroup = elements.dateFilterGroup;
-        
+
         // 1. Seleciona todos os botões de data
         const dateButtons = dateGroup.querySelectorAll('.filter-tab');
 
         const hiddenStatusList = [
-            'enviado', 
-            'entregue', 
+            'enviado',
+            'entregue',
             'cancelado',
             'venda_concretizada',
             'devolucao_analise',
@@ -728,9 +741,9 @@ document.addEventListener('DOMContentLoaded', () => {
             dateGroup.style.display = 'none';
             // Reseta o filtro de data para 'todos' silenciosamente
             if (state.dateFilter !== 'todos') {
-                state.dateFilter = 'todos'; 
+                state.dateFilter = 'todos';
                 // Atualiza visualmente o botão 'todos' como ativo
-                updateUIFilters(); 
+                updateUIFilters();
             }
             return;
         }
@@ -743,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (['pendente', 'separado', 'em_romaneio'].includes(status)) {
             dateButtons.forEach(btn => {
                 const val = btn.dataset.value;
-                
+
                 // MUDANÇA AQUI: Removemos 'futuros' da lista de ocultação
                 if (['agendados'].includes(val)) {
                     btn.style.display = 'none';
@@ -758,13 +771,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchOrders();
             }
         }
-        
+
         // Cenário C: Todos
         // Regra: Mostra tudo.
         else if (status === 'todos') {
             dateButtons.forEach(btn => btn.style.display = 'flex');
         }
-        
+
         updateUIFilters(); // Garante que as classes .active estejam certas
     }
 
@@ -776,7 +789,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (state.statusFilter === 'devolucao_concluida') {
             elements.returnHistoryFilterGroup.style.display = 'block';
-            
+
             // Garante que o filtro de datas suma (reforço)
             if (elements.dateFilterGroup) elements.dateFilterGroup.style.display = 'none';
         } else {
@@ -828,7 +841,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const isPlaceholder = element.innerText.includes('Clique duas vezes');
             const currentNote = isPlaceholder ? '' : element.innerText;
-            
+
             // Cria a caixa de texto
             const input = document.createElement('input');
             input.type = 'text';
@@ -836,7 +849,7 @@ document.addEventListener('DOMContentLoaded', () => {
             input.style.width = '100%';
             input.value = currentNote;
             input.placeholder = 'Digite a nota e pressione Enter...';
-            
+
             // Substitui o texto da span pela caixa de texto
             element.innerHTML = '';
             element.appendChild(input);
@@ -846,19 +859,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const saveHandler = async (e) => {
                 // Se for evento de teclado e não for Enter, apenas continua a digitar
                 if (e.type === 'keydown' && e.key !== 'Enter') return;
-                
+
                 const newNote = input.value.trim();
                 input.disabled = true; // Bloqueia enquanto guarda
-                
+
                 try {
                     const response = await fetch('/pedidos/api/nota', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ orderId, nota: newNote })
                     });
-                    
+
                     const result = await response.json();
-                    
+
                     if (result.success) {
                         // Atualiza a vista com a nova nota
                         element.innerHTML = '';
@@ -888,7 +901,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnExport) {
         btnExport.addEventListener('click', (e) => {
             e.preventDefault();
-            
+
             // Muda texto para feedback visual
             const originalText = btnExport.innerHTML;
             btnExport.innerHTML = '<i class="icon-refresh spinning"></i> Gerando...';
@@ -905,7 +918,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 startDate: state.startDate,
                 endDate: state.endDate,
                 plataforma: state.plataforma,
-                mediation: state.mediationFilter, 
+                mediation: state.mediationFilter,
                 devHistorico: state.devHistorico
             });
 
@@ -950,8 +963,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.ModalSystem) {
                 // O ModalSystem.confirm do seu main.js espera (title, messageHtml, options)
                 window.ModalSystem.confirm(
-                    'Exportar Registros de Produtividade', 
-                    formHtml, 
+                    'Exportar Registros de Produtividade',
+                    formHtml,
                     {
                         confirmText: 'Baixar Relatório',
                         cancelText: 'Cancelar'
@@ -992,5 +1005,5 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
+
 });

@@ -563,7 +563,7 @@ const MercadoLivreOrder = {
                 mlo.id, mlo.numero_venda, mlo.comprador, mlo.empacotador, mlo.data_venda, mlo.status_bucket, mlo.pack_id, mlo.desc_status,
                 mlo.situacao_manual, mlo.total, mlo.unidades, mlo.plataforma, mlo.titulo_anuncio, mlo.mlb_anuncio,
                 mlo.nfe_numero, mlo.codigo_empresa, mlo.data_envio_limite, mlo.data_coleta_agendada, mlo.nota_pedido,
-                mlo.data_envio_disponivel, mlo.data_previsao_entrega, mlo.medicao, sb.closed_at as data_envio,
+                mlo.data_envio_disponivel, mlo.data_previsao_entrega, mlo.medicao, mlo.data_acao, sb.closed_at as data_envio,
                 
                 (
                     SELECT STRING_AGG(
