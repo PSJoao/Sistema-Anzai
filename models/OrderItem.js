@@ -248,18 +248,17 @@ const OrderItem = {
   // Adicione isso dentro do objeto OrderItem
   
   /**
-   * Busca estatísticas de separação agrupadas por departamento e empresa.
+   * Busca estatísticas de separação agrupadas por departamento, plataforma e empresa.
    * Aplica filtros de Prazo (order_deadline) e Empresa.
    */
-  async getSeparationStats({ companyFilter, deadlines, plataforma = 'mercado_livre' }) {
+  async getSeparationStats({ companyFilter, deadlines }) {
     // BLINDAGEM: Filtra item pendente E pedido pendente (ignora cancelados/entregues)
     const whereClauses = [
         "oi.status = 'pendente'",
-        "mlo.status_bucket = 'pendente'",
-        "mlo.plataforma = $1" // <--- NOVO: Filtra a plataforma correta
+        "mlo.status_bucket = 'pendente'"
     ];
-    const values = [plataforma]; // <--- NOVO: Injeta o valor da plataforma
-    let paramCount = 2; // <--- ALTERADO: O contador agora começa no 2
+    const values = [];
+    let paramCount = 1;
 
     // 1. Filtro de Empresa
     if (companyFilter && companyFilter !== 'todos') {
@@ -272,9 +271,7 @@ const OrderItem = {
     if (deadlines && deadlines.length > 0) {
         const dateConditions = [];
         const SQL_HOJE = `((mlo.data_coleta_agendada::date = CURRENT_DATE) OR (mlo.data_coleta_agendada IS NULL AND mlo.data_envio_limite::date = CURRENT_DATE))`;
-        
         const SQL_ATRASADO = `((mlo.data_coleta_agendada::date < CURRENT_DATE) OR (mlo.data_coleta_agendada IS NULL AND mlo.data_envio_limite::date < CURRENT_DATE))`;
-        
         const SQL_FUTURO = `((mlo.data_coleta_agendada::date > CURRENT_DATE) OR (mlo.data_coleta_agendada IS NULL AND mlo.data_envio_limite::date > CURRENT_DATE))`;
 
         if (deadlines.includes('atrasado')) dateConditions.push(SQL_ATRASADO);
@@ -292,6 +289,7 @@ const OrderItem = {
         text: `
             SELECT 
                 p.cod_departamento,
+                mlo.plataforma,
                 mlo.codigo_empresa,
                 COUNT(DISTINCT oi.produto_codigo) as produtos_unicos,
                 SUM(oi.quantidade_total - oi.quantidade_separada) as unidades_pendentes
@@ -299,8 +297,8 @@ const OrderItem = {
             JOIN mercado_livre_orders mlo ON oi.order_id = mlo.id
             JOIN products p ON oi.produto_codigo = p.codigo
             WHERE ${whereSql}
-            GROUP BY p.cod_departamento, mlo.codigo_empresa
-            ORDER BY p.cod_departamento ASC, mlo.codigo_empresa ASC;
+            GROUP BY p.cod_departamento, mlo.plataforma, mlo.codigo_empresa
+            ORDER BY p.cod_departamento ASC, mlo.plataforma ASC, mlo.codigo_empresa ASC;
         `,
         values: values
     };

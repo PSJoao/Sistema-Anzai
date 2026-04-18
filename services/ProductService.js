@@ -299,42 +299,53 @@ const ProductService = {
 
   /**
    * Retorna os departamentos que possuem itens pendentes, agrupados e com estatísticas.
-   * Agora aceita filtros opcionais (companyFilter, deadlines).
+   * Agora estrutura os dados de forma aninhada: Plataforma -> Empresa -> Unidades.
    */
   async getDepartmentsWithPending(filters = {}) {
-    // Busca dados brutos no Model (agrupados por Dept e Empresa)
+    // Busca dados brutos no Model (agrupados por Dept, Plataforma e Empresa)
     const stats = await OrderItem.getSeparationStats(filters);
     
-    // Processa os dados para o formato que a View espera
+    // Processa os dados para a nova estrutura aninhada
     const departmentsMap = {};
 
     stats.forEach(row => {
         const deptCode = row.cod_departamento;
+        const plataforma = row.plataforma || 'outra';
+        const empresa = row.codigo_empresa || 'N/A';
+        const unidades = parseInt(row.unidades_pendentes) || 0;
+        const produtosUnicos = parseInt(row.produtos_unicos) || 0;
         
         if (!departmentsMap[deptCode]) {
             departmentsMap[deptCode] = {
                 cod_departamento: deptCode,
-                // Mantemos compatibilidade com nomes de campos que a view já usava
                 produtos_com_pendencia: 0, 
                 unidades_pendentes: 0,
-                // Novo objeto para detalhamento por empresa
-                empresas: {} 
+                // NOVO: Objeto que vai guardar as plataformas e, dentro delas, as empresas
+                plataformas: {}
             };
         }
 
         const dept = departmentsMap[deptCode];
         
-        // Soma os totais
-        dept.produtos_com_pendencia += parseInt(row.produtos_unicos);
-        dept.unidades_pendentes += parseInt(row.unidades_pendentes);
+        // 1. Soma os totais gerais do departamento
+        dept.produtos_com_pendencia += produtosUnicos;
+        dept.unidades_pendentes += unidades;
 
-        // Cria o breakdown por empresa (ex: { "001": 5, "002": 3 })
-        const emp = row.codigo_empresa || 'N/A';
-        if (!dept.empresas[emp]) dept.empresas[emp] = 0;
-        dept.empresas[emp] += parseInt(row.unidades_pendentes);
+        // 2. Inicializa a plataforma se ainda não existir
+        if (!dept.plataformas[plataforma]) {
+            dept.plataformas[plataforma] = {};
+        }
+
+        // 3. Inicializa a empresa dentro da plataforma se ainda não existir
+        if (!dept.plataformas[plataforma][empresa]) {
+            dept.plataformas[plataforma][empresa] = 0;
+        }
+
+        // 4. Soma as unidades para aquela empresa específica, dentro daquela plataforma
+        dept.plataformas[plataforma][empresa] += unidades;
     });
 
-    // Retorna como array
+    // Retorna apenas os valores como um array para o Handlebars iterar
     return Object.values(departmentsMap);
   },
 

@@ -57,8 +57,24 @@
     <div class="separation-department-grid">
         {{#each departments}}
             <article class="card separation-department-card">
-                <div class="card-header">
-                    <h3 class="card-title">{{lookup ../departmentLabels this.cod_departamento}}</h3>
+                <div class="card-header" style="display: flex; flex-direction: column; gap: 8px;">
+                    <h3 style="margin: 0;">{{lookup ../departmentLabels this.cod_departamento}}</h3>
+                    
+                    {{!-- Renderização Condicional das Flags de Plataforma --}}
+                    {{#if this.plataformas}}
+                        <div class="platform-flags" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            {{#each this.plataformas}}
+                                {{#if (eq @key 'mercado_livre')}}
+                                    <span class="badge" style="background-color: #FFE600; color: #333; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(0,0,0,0.1);">ML</span>
+                                {{else if (eq @key 'shopee')}}
+                                    <span class="badge" style="background-color: #EE4D2D; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(0,0,0,0.1);">Shopee</span>
+                                {{else}}
+                                    {{!-- Fallback para futuras plataformas --}}
+                                    <span class="badge" style="background-color: #8E44AD; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">{{@key}}</span>
+                                {{/if}}
+                            {{/each}}
+                        </div>
+                    {{/if}}
                 </div>
                 
                 <div class="card-body">
@@ -67,22 +83,35 @@
                         <div class="text-muted small">Unidades Pendentes: {{this.unidades_pendentes}}</div>
                     </div>
 
-                    {{#if (eq ../activeCompany 'todos')}}
-                        <div class="company-breakdown" style="border-top: 1px solid #eee; padding-top: 8px; margin-top: 8px;">
-                            <p class="text-muted small mb-1" style="font-size: 0.8rem;">Por Loja:</p>
-                            <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem;">
-                                {{#each this.empresas}}
-                                    <li style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                                        <span>Loja {{@key}}:</span>
-                                        <strong>Un. Pend.: {{this}}</strong>
-                                    </li>
-                                {{/each}}
-                            </ul>
+                    {{#if this.plataformas}}
+                        <div class="department-stats" style="margin-top: 15px; font-size: 0.9rem;">
+                            <strong style="display: block; margin-bottom: 10px; color: #555;">Pendências por Plataforma:</strong>
+                            
+                            {{#each this.plataformas}}
+                                <div style="margin-bottom: 8px; padding: 8px 12px; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid {{#if (eq @key 'mercado_livre')}}#FFE600{{else if (eq @key 'shopee')}}#EE4D2D{{else}}#8E44AD{{/if}};">
+                                    
+                                    {{!-- Título da Plataforma --}}
+                                    <strong style="display: block; margin-bottom: 5px; color: #333; text-transform: capitalize;">
+                                        {{#if (eq @key 'mercado_livre')}}Mercado Livre{{else}}{{@key}}{{/if}}
+                                    </strong>
+                                    
+                                    {{!-- Lista de Lojas dentro desta Plataforma --}}
+                                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
+                                        {{#each this}}
+                                            <li style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ddd; padding-bottom: 2px;">
+                                                <span>Loja {{@key}}</span>
+                                                <strong>Un. Pend.: {{this}}</strong>
+                                            </li>
+                                        {{/each}}
+                                    </ul>
+                                </div>
+                            {{/each}}
+                            
                         </div>
                     {{/if}}
                 </div>
                 
-                <footer class="card-footer" style="margin-top: 10px;">
+                <footer class="card-footer" style="margin-top: 10px; text-align: center;">
                     <a href="/separacao/departamento/{{this.cod_departamento}}" 
                        class="btn btn-primary btn-block btn-department-link">
                        Iniciar Separação
