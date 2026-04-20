@@ -820,7 +820,7 @@ const HubOrderService = {
         console.log('[HubOrderService] Verificando Status, Devoluções/Mediações para pedidos ativos...');
         
         const { rows: activeOrders } = await db.query(`
-            SELECT numero_venda, status_bucket, dev_historico, medicao, frete_envio, date_created
+            SELECT numero_venda, status_bucket, dev_historico, medicao, frete_envio, data_venda
             FROM mercado_livre_orders 
             WHERE status_bucket NOT IN ('cancelado', 'entregue', 'devolucao_concluida', 'nao_entregue')
         `);
@@ -848,7 +848,7 @@ const HubOrderService = {
                         let novoDevHistorico = order.dev_historico;
                         let medicaoVal = order.medicao;
                         let frete_envio = String(order.frete_envio);
-                        let date_created = new Date(order.date_created);
+                        let date_created = new Date(order.data_venda);
 
                         //LÓGICA DE DATA
                         if ((hubData.data_criacao !== null || hubData.data_criacao !== '') && date_created !== new Date(hubData.data_criacao)) {
@@ -901,7 +901,7 @@ const HubOrderService = {
                                     status_bucket = COALESCE($5, status_bucket),
                                     dev_historico = $6,
                                     frete_envio = $8,
-                                    date_created = COALESCE($9, date_created),
+                                    data_venda = COALESCE($9, data_venda),
                                     updated_at = NOW()
                                 WHERE numero_venda = $7
                             `, [
