@@ -820,7 +820,7 @@ const HubOrderService = {
         console.log('[HubOrderService] Verificando Status, Devoluções/Mediações para pedidos ativos...');
         
         const { rows: activeOrders } = await db.query(`
-            SELECT numero_venda, status_bucket, dev_historico, medicao, frete_envio
+            SELECT numero_venda, status_bucket, dev_historico, medicao, frete_envio, date_created
             FROM mercado_livre_orders 
             WHERE status_bucket NOT IN ('cancelado', 'entregue', 'devolucao_concluida', 'nao_entregue')
         `);
@@ -848,6 +848,12 @@ const HubOrderService = {
                         let novoDevHistorico = order.dev_historico;
                         let medicaoVal = order.medicao;
                         let frete_envio = String(order.frete_envio);
+                        let date_created = new Date(order.date_created);
+
+                        //LÓGICA DE DATA
+                        if ((hubData.data_criacao !== null || hubData.data_criacao !== '') && date_created !== new Date(hubData.data_criacao)) {
+                            date_created = new Date(hubData.data_criacao);
+                        }
 
                         //LÓGICA DE FRETE
                         if ((hubData.frete_envio !== null || hubData.frete_envio !== '') && frete_envio !== String(hubData.frete_envio)) {
@@ -884,7 +890,7 @@ const HubOrderService = {
                         }
 
                         // CHECAGEM DE ALTERAÇÃO
-                        if (novoStatusBucket !== order.status_bucket || novoDevHistorico !== order.dev_historico || medicaoVal !== order.medicao || frete_envio !== String(order.frete_envio)) {
+                        if (novoStatusBucket !== order.status_bucket || novoDevHistorico !== order.dev_historico || medicaoVal !== order.medicao || frete_envio !== String(order.frete_envio) || date_created.getTime() !== new Date(order.date_created).getTime()) {
                             await db.query(`
                                 UPDATE mercado_livre_orders 
                                 SET 
@@ -895,6 +901,7 @@ const HubOrderService = {
                                     status_bucket = COALESCE($5, status_bucket),
                                     dev_historico = $6,
                                     frete_envio = $8,
+                                    date_created = COALESCE($9, date_created),
                                     updated_at = NOW()
                                 WHERE numero_venda = $7
                             `, [
@@ -905,7 +912,8 @@ const HubOrderService = {
                                 novoStatusBucket !== order.status_bucket ? novoStatusBucket : null,
                                 novoDevHistorico,
                                 String(order.numero_venda),
-                                frete_envio
+                                frete_envio,
+                                date_created
                             ]);
                         }
                         

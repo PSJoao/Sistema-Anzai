@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <div>
                         <div class="header-dates-right" style="text-align: right; font-size: 0.85rem; color: #6c757d; white-space: nowrap; margin-left: 10px;">
-                            ${order.data_venda ? `<div style="margin-bottom: 2px;">Venda: <strong style="color: #343a40;">${formatDateTime(order.data_venda)}</strong></div>` : ''}
+                            ${order.data_venda ? `<div style="margin-bottom: 2px;">Venda: <strong style="color: #343a40;">${formatDateTimeAcao(order.data_venda)}</strong></div>` : ''}
                             ${order.data_acao ? `<div>Ação: <strong style="color: #343a40;">${formatDateTimeAcao(order.data_acao)}</strong></div>` : ''}
                         </div>
                         <br><br>
