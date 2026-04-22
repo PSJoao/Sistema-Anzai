@@ -73,7 +73,7 @@ const INSERT_COLUMNS = [
 ];
 
 const UPDATABLE_COLUMNS = [
-  'data_venda',
+  //'data_venda',
   'estado',
   'descricao_status',
   //'status_bucket',
