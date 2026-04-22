@@ -131,6 +131,11 @@ const HubProductService = {
 
         const ativo = data.ativo === true;
 
+        // Extrai o autoincrem da primeira imagem (cod_imagem)
+        const codImagem = (Array.isArray(data.imagens) && data.imagens.length > 0)
+            ? data.imagens[0].autoincrem || null
+            : null;
+
         return {
             codigo: codigoInt,
             descricao: data.nome || data.descricaoCadastro || 'SEM DESCRIÇÃO',
@@ -148,7 +153,8 @@ const HubProductService = {
 
             // Novos Dados
             cod_barras: data.codigoBarra, 
-            peso: data.pesoBruto,         
+            peso: data.pesoBruto,
+            cod_imagem: codImagem,
 
             // Descrições
             grupo: grupoDesc,

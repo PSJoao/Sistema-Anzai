@@ -54,6 +54,28 @@ app.use('/empacotamento', packingRoutes);
 const shippingRoutes = require('./routes/shippingRoutes');
 app.use('/expedicao', shippingRoutes);
 
+// --- Rota Proxy: Imagem de Produto (Citel API) ---
+const CitelGateway = require('./services/CitelGateway');
+app.get('/api/produto-imagem/:codImagem', protectRoute, async (req, res) => {
+    try {
+        const { codImagem } = req.params;
+        if (!codImagem) return res.status(400).send('Código de imagem obrigatório.');
+
+        const result = await CitelGateway.getProdutoImagem(codImagem);
+        if (!result || !result.data) {
+            return res.status(404).send('Imagem não encontrada.');
+        }
+
+        // Cache de 1 hora para não martelar a API a cada render
+        res.set('Content-Type', result.contentType);
+        res.set('Cache-Control', 'public, max-age=3600');
+        return res.send(Buffer.from(result.data));
+    } catch (error) {
+        console.error('[ImageProxy] Erro:', error.message);
+        return res.status(500).send('Erro ao buscar imagem.');
+    }
+});
+
 // --- Rota Raiz (Redireciona para o login) ---
 app.get('/', (req, res) => {
     // Se o usuário já estiver logado (tem token), vai para o dashboard

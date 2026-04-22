@@ -1,7 +1,7 @@
 // public/scripts/packing.js
 // public/scripts/packing.js
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     const initApp = () => {
         // Trava de segurança: Aguarda o main.js injetar o ModalSystem no window
         if (!window.ModalSystem) {
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             appEl.innerHTML = '';
             const container = document.createElement('div');
             container.className = 'card separation-card is-empty';
-            
+
             let icon = '📦';
             if (type === 'error') icon = '❌';
             if (type === 'success') icon = '✅';
@@ -111,12 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Bind do input inicial
             const form = container.querySelector('#start-scan-form');
             const input = container.querySelector('#start-scan-input');
-            
+
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                if(input.value.trim()) handleScan(input.value);
+                if (input.value.trim()) handleScan(input.value);
             });
-            
+
             // Mantém foco
             input.focus();
             input.addEventListener('blur', () => setTimeout(() => input.focus(), 100));
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const card = finishedTemplate.content.cloneNode(true);
             const orderNumberEl = card.querySelector('[data-order-number-finished]');
-            
+
             if (orderNumberEl) {
                 orderNumberEl.textContent = `Pedido ${lastOrderNumber || ''} finalizado com sucesso.`;
             }
@@ -170,6 +170,69 @@ document.addEventListener('DOMContentLoaded', () => {
             card.querySelector('[data-order-number]').textContent = order[0].numero_venda || 'Não identificado';
             card.querySelector('[data-order-buyer]').textContent = order[0].comprador || 'Cliente não identificado';
 
+            // --- NOVO: Coleta imagens dos produtos (via items ou progress) ---
+            const imageItems = [];
+            items.forEach(item => {
+                // Tenta pegar cod_imagem do item (vem do JOIN) ou do progress (guardado no lock)
+                const codImagem = item.cod_imagem || (progress[item.produto_codigo] && progress[item.produto_codigo].cod_imagem);
+                if (codImagem) {
+                    imageItems.push({
+                        cod_imagem: codImagem,
+                        descricao: item.descricao_produto || 'Produto',
+                        codigo: item.produto_codigo
+                    });
+                }
+            });
+
+            // Monta o HTML do slider apenas se tiver imagens
+            let sliderHtml = '';
+            if (imageItems.length > 0) {
+                const slidesHtml = imageItems.map((img, idx) => `
+                    <div class="image-slide ${idx === 0 ? 'active' : ''}" data-slide-index="${idx}">
+                        <img src="/api/produto-imagem/${img.cod_imagem}" 
+                             alt="${img.descricao}"
+                             data-img-index="${idx}">
+                    </div>
+                `).join('');
+
+                const dotsHtml = imageItems.length > 1
+                    ? `<div class="slider-dots">${imageItems.map((_, idx) => `
+                        <button class="slider-dot ${idx === 0 ? 'active' : ''}" data-dot-index="${idx}"></button>
+                      `).join('')}</div>`
+                    : '';
+
+                const navHtml = imageItems.length > 1
+                    ? `<button class="slider-nav-btn prev" data-slider-prev>&#8249;</button>
+                       <button class="slider-nav-btn next" data-slider-next>&#8250;</button>`
+                    : '';
+
+                const labelsHtml = imageItems.map((img, idx) => `
+                    <div class="image-slide-label" data-label-index="${idx}" style="${idx !== 0 ? 'display:none' : ''}">
+                        ${img.descricao}
+                    </div>
+                `).join('');
+
+                const counterText = imageItems.length > 1
+                    ? `<span class="image-counter" data-slider-counter>1 / ${imageItems.length}</span>`
+                    : '';
+
+                sliderHtml = `
+                    <div class="packing-image-wrapper" id="packing-image-slider">
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: linear-gradient(135deg, #f8fafc, #eef2ff); border-bottom: 1px solid var(--border-color);">
+                            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Imagens do Pedido</span>
+                            ${counterText}
+                        </div>
+                        <div class="image-slider">
+                            ${navHtml}
+                            ${slidesHtml}
+                        </div>
+                        ${labelsHtml}
+                        ${dotsHtml}
+                    </div>
+                `;
+            }
+            // ---------------------------------------------------------------
+
             // Preenche lista de itens
             const itemListEl = card.querySelector('[data-item-list]');
             itemListEl.innerHTML = '';
@@ -183,8 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const skuDisplay = item.sku || item.produto_codigo;
                 // Se tiver código de barras, mostra também. Se tiver ref de fábrica, mostra também.
                 const extraInfo = [];
-                
-                const detailText = extraInfo.length > 0 
+
+                const detailText = extraInfo.length > 0
                     ? `Cód: ${skuDisplay} | ${extraInfo.join(' | ')}`
                     : `Cód: ${skuDisplay}`;
 
@@ -194,10 +257,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 itemRow.querySelector('[data-scanned-count]').textContent = itemProg.scanned;
                 itemRow.querySelector('[data-needed-count]').textContent = itemProg.needed;
-                
+
                 const statusIcon = itemRow.querySelector('[data-status-icon]');
                 const itemCounter = itemRow.querySelector('[data-item-counter]');
-                
+
                 if (isComplete) {
                     statusIcon.textContent = '✅';
                     itemCounter.classList.add('is-complete');
@@ -205,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     statusIcon.textContent = '📦';
                 }
-                
+
                 itemListEl.appendChild(itemRow);
             });
 
@@ -213,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
             scanInput = card.querySelector('[data-scan-input]');
             scanForm = card.querySelector('[data-scan-form]');
             feedbackEl = card.querySelector('[data-feedback]');
-            
+
             // Botão Cancelar (Liberar Pedido)
             const cancelBtn = card.querySelector('[data-action="cancel"]');
             if (cancelBtn) {
@@ -222,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             scanForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                if(scanInput.value.trim()) handleScan(scanInput.value);
+                if (scanInput.value.trim()) handleScan(scanInput.value);
             });
 
             // Foco automático
@@ -230,6 +293,117 @@ document.addEventListener('DOMContentLoaded', () => {
 
             appEl.innerHTML = '';
             appEl.appendChild(card);
+
+            // --- NOVO: Injeta o slider dentro do card-body, ANTES da lista de itens ---
+            if (sliderHtml) {
+                const cardBody = appEl.querySelector('.card-body');
+                if (cardBody) {
+                    // Insere antes do primeiro filho (Itens do Pedido)
+                    cardBody.insertAdjacentHTML('afterbegin', sliderHtml);
+
+                    // Inicializa o slider controller
+                    _initPackingSlider();
+                }
+            }
+            // -----------------------------------------------------------------------
+        }
+
+        /**
+         * Controller do Slider de Imagens (Empacotamento)
+         * Gerencia navegação, dots, fallback de falha de imagem.
+         */
+        function _initPackingSlider() {
+            const wrapper = document.getElementById('packing-image-slider');
+            if (!wrapper) return;
+
+            const slides = wrapper.querySelectorAll('.image-slide');
+            const dots = wrapper.querySelectorAll('.slider-dot');
+            const labels = wrapper.querySelectorAll('.image-slide-label');
+            const counterEl = wrapper.querySelector('[data-slider-counter]');
+            const prevBtn = wrapper.querySelector('[data-slider-prev]');
+            const nextBtn = wrapper.querySelector('[data-slider-next]');
+
+            let currentIndex = 0;
+            let totalValid = slides.length;
+
+            // Trata erro de carregamento de cada imagem
+            slides.forEach((slide, idx) => {
+                const img = slide.querySelector('img');
+                if (img) {
+                    img.addEventListener('error', () => {
+                        // Remove o slide com imagem quebrada
+                        slide.remove();
+                        if (dots[idx]) dots[idx].remove();
+                        if (labels[idx]) labels[idx].remove();
+
+                        totalValid--;
+
+                        // Se não sobrou nenhuma imagem, esconde o card todo
+                        if (totalValid <= 0) {
+                            wrapper.style.display = 'none';
+                            return;
+                        }
+
+                        // Se era o slide ativo, mostra o primeiro disponível
+                        const remainingSlides = wrapper.querySelectorAll('.image-slide');
+                        const remainingDots = wrapper.querySelectorAll('.slider-dot');
+                        const remainingLabels = wrapper.querySelectorAll('.image-slide-label');
+
+                        if (remainingSlides.length > 0) {
+                            currentIndex = 0;
+                            remainingSlides[0].classList.add('active');
+                            if (remainingDots[0]) remainingDots[0].classList.add('active');
+                            if (remainingLabels[0]) remainingLabels[0].style.display = '';
+                            if (counterEl) counterEl.textContent = `1 / ${totalValid}`;
+                        }
+
+                        // Esconde navegação se sobrou apenas 1
+                        if (totalValid <= 1) {
+                            if (prevBtn) prevBtn.style.display = 'none';
+                            if (nextBtn) nextBtn.style.display = 'none';
+                            const dotsContainer = wrapper.querySelector('.slider-dots');
+                            if (dotsContainer) dotsContainer.style.display = 'none';
+                        }
+                    });
+                }
+            });
+
+            function goToSlide(idx) {
+                const allSlides = wrapper.querySelectorAll('.image-slide');
+                const allDots = wrapper.querySelectorAll('.slider-dot');
+                const allLabels = wrapper.querySelectorAll('.image-slide-label');
+
+                allSlides.forEach(s => s.classList.remove('active'));
+                allDots.forEach(d => d.classList.remove('active'));
+                allLabels.forEach(l => l.style.display = 'none');
+
+                if (allSlides[idx]) allSlides[idx].classList.add('active');
+                if (allDots[idx]) allDots[idx].classList.add('active');
+                if (allLabels[idx]) allLabels[idx].style.display = '';
+
+                currentIndex = idx;
+                if (counterEl) counterEl.textContent = `${idx + 1} / ${allSlides.length}`;
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    const allSlides = wrapper.querySelectorAll('.image-slide');
+                    const newIdx = (currentIndex - 1 + allSlides.length) % allSlides.length;
+                    goToSlide(newIdx);
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    const allSlides = wrapper.querySelectorAll('.image-slide');
+                    const newIdx = (currentIndex + 1) % allSlides.length;
+                    goToSlide(newIdx);
+                });
+            }
+
+            dots.forEach((dot, idx) => {
+                dot.addEventListener('click', () => goToSlide(idx));
+            });
         }
 
         // Feedback visual de erro ou sucesso
@@ -243,11 +417,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 return;
             }
-            
+
             feedbackEl.textContent = message;
             feedbackEl.className = `scan-feedback ${type === 'error' ? 'is-error' : 'is-success'}`;
             feedbackEl.hidden = false;
-            
+
             // Oculta sucesso após 2s
             if (type === 'success') {
                 setTimeout(() => {
@@ -290,8 +464,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const prodListEl = clone.querySelector('[data-q-prod-list]');
                 if (prodListEl && order.lista_produtos && Array.isArray(order.lista_produtos)) {
                     // Limita a 3 itens visuais para não estourar o card, se quiser mostrar tudo, remova o slice
-                    const visibleItems = order.lista_produtos.slice(0, 5); 
-                    
+                    const visibleItems = order.lista_produtos.slice(0, 5);
+
                     visibleItems.forEach(prod => {
                         const li = document.createElement('li');
                         // Exibe: "2x SKU123 - Nome do Produ..."
@@ -310,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         prodListEl.appendChild(moreLi);
                     }
                 }
-                
+
                 // Badge de Data (DD/MM)
                 const badgeDate = clone.querySelector('[data-q-date-badge]');
                 if (order.data_envio_limite) {
@@ -318,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const day = String(d.getDate()).padStart(2, '0');
                     const month = String(d.getMonth() + 1).padStart(2, '0');
                     badgeDate.textContent = `${day}/${month}`;
-                    
+
                     // Cor do badge
                     if (order.urgency === 'delayed') badgeDate.classList.add('badge-danger');
                     else if (order.urgency === 'today') badgeDate.classList.add('badge-warning');
@@ -352,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
         async function handleScan(sku) {
             if (isRequesting) return;
             isRequesting = true;
-            
+
             // Se tiver input na tela, desabilita visualmente
             if (scanInput) scanInput.disabled = true;
 
@@ -364,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch('/empacotamento/api/scan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sku, plataforma: currentPlatform }) 
+                    body: JSON.stringify({ sku, plataforma: currentPlatform })
                 });
 
                 const data = await response.json();
@@ -380,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // 2. Limpa a sessão local
                     currentSession = null;
-                    
+
                     // Atualiza a lista de pedidos
                     fetchQueue();
 
@@ -388,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderEmptyCard(`Pedido ${data.numero_venda} finalizado! Bipe o próximo.`, 'success');
                 } else {
                     // Verifica se foi o início de uma nova sessão
-                    const foiInicio = !currentSession; 
+                    const foiInicio = !currentSession;
 
                     if (data.order && data.items) {
                         currentSession = {
@@ -401,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     renderSession();
-                    
+
                     if (foiInicio) {
                         showFeedback('Pedido iniciado!', 'success');
                     } else {
@@ -411,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error('[Empacotamento] Erro ao bipar:', error);
-                
+
                 // --- MODIFICAÇÃO PARA O MODAL DE CANCELAMENTO ---
                 // Verifica se é um erro crítico (Cancelamento) baseado na mensagem do Backend
                 const isCritical = error.message.includes('ATENÇÃO') || error.message.includes('CANCELADO');
@@ -419,11 +593,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isCritical && window.ModalSystem) {
                     // Usa o ModalSystem do main.js para travar a tela e avisar
                     await window.ModalSystem.alert(
-                        '⛔ Bloqueio de Segurança', 
+                        '⛔ Bloqueio de Segurança',
                         `<p style="font-size: 1.1rem;">${error.message}</p>`,
                         { confirmClass: 'btn-danger', confirmText: 'Entendido' }
                     );
-                    
+
                     // Se o erro foi de cancelamento, é provável que a sessão tenha sido invalidada ou o pedido removido.
                     // Limpamos o input para garantir.
                     if (scanInput) scanInput.value = '';
@@ -462,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
-                
+
                 currentSession = null;
                 renderEmptyCard('Pedido devolvido à fila.', 'info');
 

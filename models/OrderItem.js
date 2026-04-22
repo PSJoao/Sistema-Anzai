@@ -426,7 +426,8 @@ const OrderItem = {
           oi.descricao_produto,
           oi.quantidade_total,
           p.cod_fabrica,
-          p.cod_barras
+          p.cod_barras,
+          p.cod_imagem
         FROM ${TABLE_NAME} oi
         JOIN public.mercado_livre_orders mlo ON oi.order_id = mlo.id
         JOIN public.products p ON oi.produto_codigo = p.codigo

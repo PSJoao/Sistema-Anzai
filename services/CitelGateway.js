@@ -135,6 +135,34 @@ const CitelGateway = {
             console.error(`[CitelGateway] Erro ao buscar produto ${codigo}:`, error.message);
             throw error;
         }
+    },
+
+    /**
+     * Busca a imagem de um produto pelo código de imagem (autoincrem).
+     * Endpoint: /produtoImagem/{codImagem}
+     * @param {string} codImagem - Código autoincrem da imagem
+     * @returns {Promise<{data: Buffer, contentType: string}|null>}
+     */
+    async getProdutoImagem(codImagem) {
+        try {
+            const response = await apiClient.get(`/produtoImagem/${codImagem}`, {
+                responseType: 'arraybuffer',
+                headers: {
+                    'Accept': '*/*' // CORREÇÃO 406: Accept genérico para evitar rejeição do ERP
+                }
+            });
+
+            return {
+                data: response.data,
+                contentType: response.headers['content-type'] || 'image/jpeg'
+            };
+        } catch (error) {
+            if (error.response && error.response.status === 404) {
+                return null;
+            }
+            console.error(`[CitelGateway] Erro ao buscar imagem ${codImagem}:`, error.message);
+            return null; // Falha silenciosa para não travar o fluxo
+        }
     }
 };
 

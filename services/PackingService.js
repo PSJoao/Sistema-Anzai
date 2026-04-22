@@ -208,6 +208,7 @@ const PackingService = {
         sku: item.sku,
         cod_fabrica: item.cod_fabrica,
         cod_barras: item.cod_barras,
+        cod_imagem: item.cod_imagem,
         descricao: item.descricao_produto
       };
 

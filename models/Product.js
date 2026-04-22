@@ -46,7 +46,8 @@ const PRODUCT_COLUMNS = [
   'cest',
   'tipo_produto',
   'cod_barras', 
-  'peso'        
+  'peso',
+  'cod_imagem'
 ];
 
 const Product = {
