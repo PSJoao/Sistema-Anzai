@@ -45,7 +45,7 @@ function resolveStatusBucket(pedidoApi) {
     /*if (!p.dataEnvioLimite && !p.dataColetaAgendada) {
         return 'cancelado';
     }*/
-    
+
     // Retorna pendente para novos pedidos ou atualizações normais.
     // O Model MercadoLivreOrder protege status avançados (separado, etc) de serem sobrescritos por 'pendente'.
     return 'pendente';
@@ -90,7 +90,7 @@ function generateOcrVariations(originalId) {
     // Gera todas as combinações binárias
     for (let i = 1; i < totalCombinations; i++) { // Começa do 1 pois o 0 é o original
         let chars = cleanId.split('');
-        
+
         for (let j = 0; j < ambiguousIndices.length; j++) {
             // Se o bit j estiver ativo, aplica a troca
             if ((i >> j) & 1) {
@@ -107,10 +107,10 @@ function generateOcrVariations(originalId) {
 
 function safeDate(val) {
     if (!val) return null;
-    
+
     // Cria o objeto Date (que vai nascer como 00:00 UTC se a string for só data)
     const date = new Date(val);
-    
+
     // Validação básica para não quebrar com datas inválidas
     if (isNaN(date.getTime())) return null;
 
@@ -120,7 +120,7 @@ function safeDate(val) {
     // O fuso do Brasil (-3h) jogaria isso para o dia anterior.
     // Então, forçamos para 12:00 (Meio-dia) UTC.
     const utcHours = date.getUTCHours();
-    if (utcHours < 5) { 
+    if (utcHours < 5) {
         date.setUTCHours(12);
     }
 
@@ -143,7 +143,7 @@ async function getHubToken(account) {
             email: account.email,
             password: account.pass
         });
-        
+
         if (response.data && response.data.token) {
             // Salva no cache (validade simulada de 24h para evitar login excessivo)
             hubTokenCache[account.email] = {
@@ -201,7 +201,7 @@ const HubOrderService = {
                 console.log(`[HubOrderService] Buscando etiquetas na conta: ${account.email}`);
 
                 let offset = 0;
-                const limit = 1000; 
+                const limit = 1000;
                 let continuarBuscando = true;
                 let paginasProcessadas = 0;
 
@@ -224,8 +224,34 @@ const HubOrderService = {
                             let etiquetaZpl = null;
 
                             if (!pacote.etiqueta_zpl && (pacote.status_envio === 'cancelled' || pacote.status_envio === 'shipped' || pacote.status_envio === 'delivered' || pacote.status_pedido_geral === 'cancelled')) {
-                                continue;    
-                            } else if (!pacote.etiqueta_zpl && (pacote.status_envio !== 'cancelled' || pacote.status_envio !== 'shipped' || pacote.status_envio === 'delivered' || pacote.status_pedido_geral !== 'cancelled')) {
+                                continue;
+                            } else if (!pacote.etiqueta_zpl) {
+                                // REGRA: Pedidos sem data limite de envio não entram como sem etiqueta
+                                if (!pacote.data_limite_envio) {
+                                    continue;
+                                }
+
+                                const hoje = new Date();
+                                hoje.setHours(0, 0, 0, 0);
+                                const dataLimiteObj = new Date(pacote.data_limite_envio);
+                                dataLimiteObj.setHours(dataLimiteObj.getHours() - 3); // Corrige UTC -> BRT
+                                const dataLimiteDia = new Date(dataLimiteObj);
+                                dataLimiteDia.setHours(0, 0, 0, 0);
+
+                                // REGRA: Se data limite tem mais de 1 mês, ignora (pedido antigo)
+                                const umMesAtras = new Date();
+                                umMesAtras.setMonth(umMesAtras.getMonth() - 1);
+                                umMesAtras.setHours(0, 0, 0, 0);
+                                if (dataLimiteDia < umMesAtras) {
+                                    continue;
+                                }
+
+                                // REGRA: Só marca como sem etiqueta se a data limite de envio for HOJE ou já passou.
+                                // Se ainda é futuro, o pedido ainda tem tempo de receber a etiqueta normalmente.
+                                if (dataLimiteDia > hoje) {
+                                    continue;
+                                }
+
                                 semEtiqueta = true;
                                 etiquetaZpl = 'Sem Etiqueta';
                             } else {
@@ -236,12 +262,12 @@ const HubOrderService = {
 
                             if (!semEtiqueta) {
                                 orderNumber = pacote.id_envio_ml ? `MLB_SHML${pacote.id_envio_ml}` : `MLB_PEDIDO${pacote.ids_pedidos_originais[0]}`;
-                            } else { 
+                            } else {
                                 orderNumber = pacote.id_envio_ml ? `MLB_SHML#${pacote.id_envio_ml}` : `MLB_PEDIDO#${pacote.ids_pedidos_originais[0]}`;
                             }
-                
+
                             //const dataEnvioLimite = extractShippingDateFromZplInternal(pacote.etiqueta_zpl);
-                            
+
                             let dataOriginal = pacote.data_limite_envio;
                             let dataCorrigidaObj = new Date(dataOriginal);
                             dataCorrigidaObj.setHours(dataCorrigidaObj.getHours() - 3);
@@ -257,6 +283,19 @@ const HubOrderService = {
 
                             //console.log(`PEDIDO: ${pacote.id_envio_ml}`);
                             //console.log(`Data Original (UTC): ${dataOriginal} | Data Corrigida (UTC-3): ${dataEnvioCorrigida}`);
+
+                            // PREVENÇÃO: Se é sem etiqueta, verifica se já existe uma etiqueta REAL para este pedido.
+                            // Isso evita reinserir registros que seriam limpos logo depois (flickering na contagem).
+                            if (semEtiqueta) {
+                                const realOrderNumber = orderNumber.replace('#', '');
+                                const { rows: existingReal } = await db.query(
+                                    `SELECT 1 FROM shipping_labels WHERE order_number = $1 AND (sem_etiqueta = false OR sem_etiqueta IS NULL)`,
+                                    [realOrderNumber]
+                                );
+                                if (existingReal.length > 0) {
+                                    continue; // Já tem etiqueta real, não precisa inserir como sem etiqueta
+                                }
+                            }
 
                             const res = await db.query(
                                 `INSERT INTO shipping_labels (
@@ -290,10 +329,10 @@ const HubOrderService = {
                                     OR shipping_labels.loja IS DISTINCT FROM EXCLUDED.loja
                                     OR (shipping_labels.zpl_content IS NULL OR shipping_labels.zpl_content = 'Sem Etiqueta')
                                 RETURNING xmax;
-                                `, 
+                                `,
                                 [orderNumber, etiquetaZpl, dataEnvioCorrigida, mlbItem, semEtiqueta, pacote.nome_loja]
                             );
-                            
+
                             if (res.rowCount > 0) {
                                 // 'xmax' é 0 para INSERTs e maior que 0 para UPDATEs no Postgres
                                 if (res.rows[0].xmax == 0) {
@@ -336,7 +375,7 @@ const HubOrderService = {
 
     async processHubOrder(hubData, labelData) {
         // Mapeamento inteligente Hub -> Sistema
-        
+
         // 1. Identificação
         // O Hub agrupa por envio. O numero_venda principal será o ID do Envio (se houver) com prefixo.
         const numeroVenda = hubData.id_envio_ml ? `MLB_SHML${hubData.id_envio_ml}` : `MLB_PEDIDO${hubData.ids_pedidos_originais[0]}`;
@@ -351,7 +390,7 @@ const HubOrderService = {
         // 3. Datas (Regra Específica Solicitada)
         // Data Limite: Vem da Etiqueta (shipping_labels)
         const dataLimite = labelData.data_envio_limite ? new Date(labelData.data_envio_limite) : null;
-        
+
         // Data Disponível: Data Limite - 2 dias
         let dataDisponivel = null;
         if (dataLimite) {
@@ -370,7 +409,7 @@ const HubOrderService = {
         if (hubData.itens && Array.isArray(hubData.itens)) {
             for (const item of hubData.itens) {
                 const skuLimpo = item.sku ? item.sku.trim() : 'SEM_SKU';
-                
+
                 // 4.1. Alimenta os totalizadores do pedido usando o item pai (mantém integridade financeira e visual)
                 unidadesTotal += item.quantidade;
                 titulos.push(item.titulo);
@@ -394,7 +433,7 @@ const HubOrderService = {
                         itensMap.push({
                             produto_codigo: subCodigoProduto,
                             sku: subSku,
-                            descricao_produto: `${descItem} (Item de Kit)`, 
+                            descricao_produto: `${descItem} (Item de Kit)`,
                             quantidade_total: quantidadeFinal,
                             quantidade_separada: 0,
                             status: 'pendente'
@@ -403,7 +442,7 @@ const HubOrderService = {
                 } else {
                     // PRODUTO SIMPLES: Segue o fluxo normal (não encontrou na produtos_estrutura)
                     const codigoProduto = parseInt(skuLimpo.replace(/\D/g, '')) || 0;
-                    
+
                     itensMap.push({
                         produto_codigo: codigoProduto,
                         sku: skuLimpo,
@@ -420,51 +459,51 @@ const HubOrderService = {
         const orderData = {
             numero_venda: numeroVenda,
             data_venda: safeDate(hubData.data_criacao),
-            
+
             // Dados Fiscais (Hub não tem NFe ainda, deixa null)
             chave_acesso: null,
-            nfe_numero: null,         
+            nfe_numero: null,
             codigo_empresa: hubData.nome_loja,
-            
+
             status_bucket: statusBucket,
             total: 0, // Hub retorna preço unitário nos itens, poderia somar, mas opcional
-            
+
             comprador: hubData.comprador_nickname || 'Cliente ML',
-            cpf: null, 
-            
+            cpf: null,
+
             // Endereço (Hub atual não retorna full address no endpoint de listagem, deixa genérico)
             endereco_entrega: 'Endereço via Etiqueta',
             cidade: 'N/A',
             estado_entrega: 'BR',
             cep: '00000-000',
             pais: 'BR',
-            
+
             data_envio_limite: dataLimite,
             data_envio_disponivel: dataDisponivel,
             data_previsao_entrega: dataPrevisao,
             data_coleta_agendada: null, // Forçado NULL conforme solicitado
-            
+
             unidades: unidadesTotal,
             titulo_anuncio: titulos.slice(0, 3).join(' | '),
-            pertence_kit: hubData.ids_pedidos_originais.length > 1, 
+            pertence_kit: hubData.ids_pedidos_originais.length > 1,
 
             plataforma: 'mercado_livre', // Forçado pois vem do Hub ML
-            
+
             uploaded_at: new Date()
         };
 
         // --- PERSISTÊNCIA ---
         // Salva Cabeçalho
         await MercadoLivreOrder.bulkUpsert([orderData]);
-        
+
         // Recupera ID para salvar Itens
         const savedOrders = await MercadoLivreOrder.findByNumeroVendas([numeroVenda]);
         if (savedOrders.length > 0 && itensMap.length > 0) {
             const orderId = savedOrders[0].id;
-            
+
             // --- TRAVA DE SEGURANÇA ---
             const temItensProcessados = await OrderItem.hasProcessedItems(orderId);
-            
+
             if (!temItensProcessados) {
                 // Totalmente seguro: Limpa os itens antigos antes de gravar os novos do Hub
                 await OrderItem.deleteByOrderId(orderId);
@@ -474,7 +513,7 @@ const HubOrderService = {
                 //console.log(`[HubOrderService] ⚠️ Itens do pedido ${numeroVenda} (Hub) ignorados. O pedido já está em separação/expedição.`);
             }
         }
-        
+
         console.log(`[HubOrderService] Pedido ${numeroVenda} recuperado via Hub ML (Fallback).`);
     },
 
@@ -501,24 +540,24 @@ const HubOrderService = {
             for (const numeroVenda of orderNumbers) {
                 try {
                     console.log(`[HubOrderService] Processando prioritário: ${numeroVenda}`);
-                    
+
                     // --- 1. Buscar dados da etiqueta previamente salvos ---
                     const { rows: labelRows } = await db.query(
-                        'SELECT data_envio_limite, plataforma FROM shipping_labels WHERE order_number = $1', 
+                        'SELECT data_envio_limite, plataforma FROM shipping_labels WHERE order_number = $1',
                         [numeroVenda]
                     );
                     const labelSalva = labelRows.length > 0 ? labelRows[0] : null;
-                    
+
                     // 2. PREPARAÇÃO DO ID (Ajuste se a Citel não usar o prefixo SHP_)
                     let numeroBuscaCitel = numeroVenda;
-            
+
                     const dadosCitel = await CitelGateway.getPedidoPorNumero(numeroBuscaCitel);
-                    
+
                     if (dadosCitel) {
                         // --- 3. Passar a plataforma e a data limite correta ---
                         let plataformaPrioridade = labelSalva ? labelSalva.plataforma : 'mercado_livre';
                         if (!labelSalva && numeroVenda.startsWith('SHP_')) plataformaPrioridade = 'shopee';
-                        
+
                         let dataLimite = labelSalva ? labelSalva.data_envio_limite : null;
 
                         await this.processSingleOrder(dadosCitel, plataformaPrioridade, null, dataLimite);
@@ -558,9 +597,9 @@ const HubOrderService = {
         }
 
         console.log(`[HubOrders] Iniciando sincronização...`);
-        
+
         try {
-            isSyncing = true; 
+            isSyncing = true;
             stopSignal = false;
 
             // 1. Baixa etiquetas (sem sobrescrever as existentes)
@@ -579,7 +618,7 @@ const HubOrderService = {
                       mlo.status_bucket NOT IN ('cancelado', 'entregue')
                   )
             `;
-            
+
             const { rows: labels } = await db.query(queryLabels);
 
             if (labels.length === 0) {
@@ -594,8 +633,8 @@ const HubOrderService = {
             for (const label of labels) {
                 if (stopSignal) break;
 
-                const numeroPedido = label.order_number; 
-                const plataforma = label.plataforma || 'mercado_livre'; 
+                const numeroPedido = label.order_number;
+                const plataforma = label.plataforma || 'mercado_livre';
                 const zplContent = label.zpl_content;
                 let processadoNaCitel = false;
 
@@ -607,7 +646,7 @@ const HubOrderService = {
                         await this.processSingleOrder(pedidoApi, plataforma, zplContent, label.data_envio_limite);
                         totalProcessados++;
                         processadoNaCitel = true;
-                    } 
+                    }
                 } catch (citelErr) {
                     console.warn(`[HubOrders] Erro Citel (${numeroPedido}): ${citelErr.message}.`);
                 }
@@ -618,24 +657,24 @@ const HubOrderService = {
                     try {
                         const cleanId = numeroPedido.replace('MLB_SHML', '').replace('MLB_PEDIDO', '');
                         let foundInHub = false;
-                        
+
                         for (const account of HUB_ACCOUNTS) {
                             const token = await getHubToken(account);
                             if (!token) continue;
-                            
+
                             try {
                                 const hubResponse = await axios.get(`${HUB_API_URL}/envios/${cleanId}`, {
                                     headers: { 'Authorization': `Bearer ${token}` }
                                 });
-                                
+
                                 if (hubResponse.data) {
                                     // ACHOU NO HUB!
-                                    await this.processHubOrder(hubResponse.data, label); 
+                                    await this.processHubOrder(hubResponse.data, label);
                                     totalProcessados++;
-                                    
+
                                     foundInHub = true;
                                     //console.log(`[HubFallback] Encontrado na conta ${account.email}, mas importação de itens DESATIVADA.`);
-                                    break; 
+                                    break;
                                 }
                             } catch (e) {
                                 // Ignora erro na busca
@@ -670,25 +709,25 @@ const HubOrderService = {
      * @param {string} plataformaOrigem Identificador da plataforma (ex: amazon, shopee)
      */
     async processSingleOrder(apiResponse, plataformaOrigem = 'mercado_livre', zplContent = null, dataEnvioLimiteEtiqueta = null) {
-        
+
         //console.log(`DATA LABEL: ${dataEnvioLimiteEtiqueta}`);
         // 1. Acessa o objeto "pedido" dentro do wrapper
-        const p = apiResponse.pedido; 
+        const p = apiResponse.pedido;
         if (!p) return;
 
         // 2. Identifica o ID da venda
-        const numeroVenda = p.numeroPocket; 
+        const numeroVenda = p.numeroPocket;
         if (!numeroVenda) {
             console.warn('[HubOrders] Pedido sem numeroPocket (numero_venda). Ignorando.');
             return;
         }
 
         const statusBucket = resolveStatusBucket(apiResponse);
-        
+
         // Extração segura de sub-objetos
         const cliente = p.cliente || {};
         const enderecoObj = p.enderecoEntrega || {};
-        const cidadeObj = enderecoObj.cidade || {}; 
+        const cidadeObj = enderecoObj.cidade || {};
         const itens = p.itens || [];
 
         // 3. Captura a Chave de Acesso
@@ -698,7 +737,7 @@ const HubOrderService = {
         }
 
         // Busca de NFe e Código Empresa
-        const codigoEmpresa = p.codigoEmpresa || null; 
+        const codigoEmpresa = p.codigoEmpresa || null;
         let nfeNumero = null;
 
         if (chaveAcesso) {
@@ -714,7 +753,7 @@ const HubOrderService = {
         }
 
         // --- PREPARAÇÃO DOS ITENS ---
-        const itemsMap = new Map(); 
+        const itemsMap = new Map();
         let unidadesTotal = 0;
         let nomesProdutos = [];
 
@@ -728,7 +767,7 @@ const HubOrderService = {
             nomesProdutos.push(descricao);
 
             if (produtoCodigo) {
-                const uniqueKey = `${produtoCodigo}`; 
+                const uniqueKey = `${produtoCodigo}`;
                 if (itemsMap.has(uniqueKey)) {
                     const existingItem = itemsMap.get(uniqueKey);
                     existingItem.quantidade_total += quantidade;
@@ -738,7 +777,7 @@ const HubOrderService = {
                         sku: sku,
                         descricao_produto: descricao,
                         quantidade_total: quantidade,
-                        quantidade_separada: 0, 
+                        quantidade_separada: 0,
                         status: 'pendente'
                     });
                 }
@@ -751,34 +790,34 @@ const HubOrderService = {
         const orderData = {
             numero_venda: numeroVenda,
             data_venda: safeDate(p.dataHoraImportacao || p.dataEntrada),
-            
+
             chave_acesso: chaveAcesso,
-            nfe_numero: nfeNumero,         
-            codigo_empresa: codigoEmpresa, 
-            
+            nfe_numero: nfeNumero,
+            codigo_empresa: codigoEmpresa,
+
             status_bucket: statusBucket,
             total: p.totalProdutos || p.valorTotal || 0,
-            
+
             comprador: cliente.nome || p.nomeConsumidorOuCliente || 'Cliente Desconhecido',
-            cpf: cliente.numeroDocumento, 
-            
+            cpf: cliente.numeroDocumento,
+
             endereco_entrega: `${enderecoObj.endereco || ''}, ${enderecoObj.numero || ''} - ${enderecoObj.bairro || ''}`,
             cidade: cidadeObj.nomeCidade,
             estado_entrega: cidadeObj.siglaEstado,
             cep: enderecoObj.cep,
             pais: 'BR',
-            
+
             data_envio_limite: dataEnvioLimiteEtiqueta ? new Date(dataEnvioLimiteEtiqueta) : safeDate(p.dataEnvioLimite),
             data_envio_disponivel: safeDate(p.dataEnvioDisponivel),
             data_previsao_entrega: safeDate(p.dataPrevisaoEntrega),
             data_coleta_agendada: safeDate(p.dataColetaAgendada),
-            
+
             unidades: unidadesTotal,
             titulo_anuncio: nomesProdutos.slice(0, 3).join(' | ') + (nomesProdutos.length > 3 ? '...' : ''),
-            pertence_kit: itens.length > 1, 
+            pertence_kit: itens.length > 1,
 
-            plataforma: plataformaOrigem, 
-            
+            plataforma: plataformaOrigem,
+
             uploaded_at: new Date()
         };
 
@@ -791,14 +830,14 @@ const HubOrderService = {
                 WHERE numero_venda = $2
                 `, [new Date(dataEnvioLimiteEtiqueta), numeroVenda]);
         }
-        
+
         const savedOrders = await MercadoLivreOrder.findByNumeroVendas([numeroVenda]);
         if (savedOrders.length > 0 && orderItemsData.length > 0) {
             const orderId = savedOrders[0].id;
 
             // --- TRAVA DE SEGURANÇA ---
             const temItensProcessados = await OrderItem.hasProcessedItems(orderId);
-            
+
             if (!temItensProcessados) {
                 // Totalmente seguro: Limpa os itens antigos
                 await OrderItem.deleteByOrderId(orderId);
@@ -818,7 +857,7 @@ const HubOrderService = {
      */
     async syncReturnsAndMediations() {
         console.log('[HubOrderService] Verificando Status, Devoluções/Mediações para pedidos ativos...');
-        
+
         const { rows: activeOrders } = await db.query(`
             SELECT numero_venda, status_bucket, dev_historico, medicao, frete_envio, data_venda
             FROM mercado_livre_orders 
@@ -829,7 +868,7 @@ const HubOrderService = {
 
         for (const order of activeOrders) {
             const cleanId = order.numero_venda.replace('MLB_SHML', '').replace('MLB_PEDIDO', '');
-            
+
             // Procura esse pedido nas contas do Hub
             for (const account of HUB_ACCOUNTS) {
                 const token = await getHubToken(account);
@@ -841,7 +880,7 @@ const HubOrderService = {
                     });
 
                     const hubData = hubResponse.data;
-                    
+
                     if (hubData) {
                         // ESTADO ATUAL
                         let novoStatusBucket = order.status_bucket;
@@ -905,10 +944,10 @@ const HubOrderService = {
                                     updated_at = NOW()
                                 WHERE numero_venda = $7
                             `, [
-                                medicaoVal, 
-                                hubData.id_envio_dev ? String(hubData.id_envio_dev) : null, 
-                                hubData.status_dev ? String(hubData.status_dev) : null, 
-                                hubData.status_envio_dev ? String(hubData.status_envio_dev) : null, 
+                                medicaoVal,
+                                hubData.id_envio_dev ? String(hubData.id_envio_dev) : null,
+                                hubData.status_dev ? String(hubData.status_dev) : null,
+                                hubData.status_envio_dev ? String(hubData.status_envio_dev) : null,
                                 novoStatusBucket !== order.status_bucket ? novoStatusBucket : null,
                                 novoDevHistorico,
                                 String(order.numero_venda),
@@ -916,7 +955,7 @@ const HubOrderService = {
                                 date_created
                             ]);
                         }
-                        
+
                         break;
                     }
                 } catch (e) {
@@ -928,7 +967,7 @@ const HubOrderService = {
         }
         console.log('[HubOrderService] Sincronização de Status, Devoluções e Mediações concluída.');
     },
-    
+
     //Função de limpeza de pedidos que não tinham etiquetas e agora têm
     async syncNotLabels() {
         console.log('[HubOrderService] Verificando e limpando pedidos que passaram a ter etiquetas...');
@@ -939,9 +978,33 @@ const HubOrderService = {
                 WHERE sem_etiqueta = true
                 AND data_envio_limite < NOW() - INTERVAL '1 month'
             `);
-            console.log(`[HubOrderService] Limpeza concluída: ${deleteResult.rowCount} registros antigos (mais de 1 mês) deletados.`);
+            if (deleteResult.rowCount > 0) console.log(`[HubOrderService] Limpeza: ${deleteResult.rowCount} registros antigos (mais de 1 mês) deletados.`);
         } catch (error) {
             console.error('[HubOrderService] Erro ao deletar registros antigos:', error.message);
+        }
+
+        // LIMPEZA POR DATA LIMITE NULA: Remove sem_etiqueta sem data de envio limite
+        try {
+            const deleteNulo = await db.query(`
+                DELETE FROM shipping_labels
+                WHERE sem_etiqueta = true
+                AND data_envio_limite IS NULL
+            `);
+            if (deleteNulo.rowCount > 0) console.log(`[HubOrderService] Limpeza: ${deleteNulo.rowCount} sem etiqueta com data limite nula removidos.`);
+        } catch (error) {
+            console.error('[HubOrderService] Erro ao limpar sem_etiqueta com data nula:', error.message);
+        }
+
+        // LIMPEZA POR DATA LIMITE FUTURA: Remove sem_etiqueta cujo prazo de envio ainda está no futuro
+        try {
+            const deleteFuturo = await db.query(`
+                DELETE FROM shipping_labels
+                WHERE sem_etiqueta = true
+                AND data_envio_limite::date > CURRENT_DATE
+            `);
+            if (deleteFuturo.rowCount > 0) console.log(`[HubOrderService] Limpeza: ${deleteFuturo.rowCount} sem etiqueta com prazo futuro removidos.`);
+        } catch (error) {
+            console.error('[HubOrderService] Erro ao limpar sem_etiqueta futuro:', error.message);
         }
 
         const { rows: noLabelOrders } = await db.query(`
@@ -952,35 +1015,82 @@ const HubOrderService = {
 
         if (noLabelOrders.length === 0) return;
 
+        let limpezaEtiqueta = 0;
+        let limpezaStatus = 0;
+
         for (const order of noLabelOrders) {
-            if (order.order_number.includes('MLB_PEDIDO')) {
-                continue;
+            // --- LIMPEZA 1: Pedidos sem etiqueta que já possuem etiqueta real ---
+            if (!order.order_number.includes('MLB_PEDIDO')) {
+                const cleanId = order.order_number.replace('MLB_SHML#', 'MLB_SHML');
+
+                // PROTEÇÃO 1: Se o ID não tinha '#' e não mudou, pula para evitar que ele ache a si mesmo
+                if (cleanId !== order.order_number) {
+                    // PROTEÇÃO 2: Garante que está buscando a etiqueta REAL (sem_etiqueta deve ser falso ou nulo na real)
+                    const { rows: rightOrder } = await db.query(`
+                        SELECT order_number
+                        FROM shipping_labels 
+                        WHERE order_number = $1 AND (sem_etiqueta = false OR sem_etiqueta IS NULL)
+                    `, [cleanId]);
+
+                    if (rightOrder.length > 0) {
+                        await db.query(`
+                            DELETE FROM shipping_labels
+                            WHERE order_number = $1
+                        `, [order.order_number]);
+                        limpezaEtiqueta++;
+                        continue; // Já deletou, não precisa verificar status no Hub
+                    }
+                }
             }
 
-            const cleanId = order.order_number.replace('MLB_SHML#', 'MLB_SHML');
+            // --- LIMPEZA 2: Pedidos sem etiqueta cujo status no Hub é cancelado/enviado/entregue ---
+            // Extrai o ID limpo para consulta no Hub
+            const hubCleanId = order.order_number
+                .replace('MLB_SHML#', '')
+                .replace('MLB_SHML', '')
+                .replace('MLB_PEDIDO#', '')
+                .replace('MLB_PEDIDO', '');
 
-            // PROTEÇÃO 1: Se o ID não tinha '#' e não mudou, pula para evitar que ele ache a si mesmo
-            if (cleanId === order.order_number) {
-                continue; 
+            let deveDeletar = false;
+
+            for (const account of HUB_ACCOUNTS) {
+                const token = await getHubToken(account);
+                if (!token) continue;
+
+                try {
+                    const hubResponse = await axios.get(`${HUB_API_URL}/envios/${hubCleanId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (hubResponse.data) {
+                        const statusEnvio = hubResponse.data.status_envio;
+                        const statusGeral = hubResponse.data.status_pedido_geral;
+
+                        // Se o pedido foi cancelado, enviado ou entregue, não faz sentido manter como "sem etiqueta"
+                        if (
+                            statusEnvio === 'cancelled' ||
+                            statusEnvio === 'shipped' ||
+                            statusEnvio === 'delivered' ||
+                            statusGeral === 'cancelled'
+                        ) {
+                            deveDeletar = true;
+                        }
+                        break; // Achou no Hub, não precisa tentar outras contas
+                    }
+                } catch (e) {
+                    // Ignora erro na busca (404, timeout, etc)
+                }
             }
 
-            // PROTEÇÃO 2: Garante que está buscando a etiqueta REAL (sem_etiqueta deve ser falso ou nulo na real)
-            const { rows: rightOrder } = await db.query(`
-                SELECT order_number
-                FROM shipping_labels 
-                WHERE order_number = $1 AND (sem_etiqueta = false OR sem_etiqueta IS NULL)
-            `, [cleanId]);
-
-            if (rightOrder.length === 0) {
-                continue;
-            } else {
+            if (deveDeletar) {
                 await db.query(`
                     DELETE FROM shipping_labels
                     WHERE order_number = $1
                 `, [order.order_number]);
+                limpezaStatus++;
             }
         }
-        console.log('[HubOrderService] Limpeza de sem etiquetas concluída.');
+        console.log(`[HubOrderService] Limpeza de sem etiquetas concluída. ${limpezaEtiqueta} removidos (já tinham etiqueta), ${limpezaStatus} removidos (cancelado/enviado/entregue).`);
     },
 
     /**
@@ -1013,7 +1123,7 @@ const HubOrderService = {
         try {
             //const resEntregues = await db.query(queryEntregues);
             //if (resEntregues.rowCount > 0) console.log(`[HubOrders] ${resEntregues.rowCount} pedidos antigos marcados como ENTREGUE.`);
-            
+
             const resLiberados = await db.query(queryLiberar);
             if (resLiberados.rowCount > 0) console.log(`[HubOrders] ${resLiberados.rowCount} pedidos AGENDADOS liberados.`);
 
@@ -1021,7 +1131,7 @@ const HubOrderService = {
             await this.syncNotLabels();
             await syncDates();
             await syncPackid();
-            
+
         } catch (error) {
             console.error('[HubOrders] Erro nas tarefas de manutenção:', error.message);
         }
