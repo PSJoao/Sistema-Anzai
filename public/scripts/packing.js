@@ -46,7 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (headerTitle) {
             const badgeLabel = currentPlatform === 'shopee' ? 'Shopee' : 'Mercado Livre';
             const badgeClass = currentPlatform === 'shopee' ? 'bg-warning text-dark' : 'bg-primary';
-            headerTitle.innerHTML += ` <span class="badge ${badgeClass}" style="vertical-align: middle; color: red;">${badgeLabel}</span>`;
+            if (badgeLabel === 'Mercado Livre') {
+                headerTitle.innerHTML += ` <span class="badge ${badgeClass}" style="vertical-align: middle; color: yellow;">${badgeLabel}</span>`;
+            } else if (badgeLabel === 'Shopee') {
+                headerTitle.innerHTML += ` <span class="badge ${badgeClass}" style="vertical-align: middle; color: red;">${badgeLabel}</span>`;
+            }
         }
 
         // Templates
