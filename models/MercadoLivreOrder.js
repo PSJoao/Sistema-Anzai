@@ -574,6 +574,16 @@ const MercadoLivreOrder = {
                     WHERE oi.order_id = mlo.id
                 ) as lista_skus,
 
+                (
+                    SELECT STRING_AGG(
+                        COALESCE(p.cod_imagem, ''), 
+                        ','
+                    ) 
+                    FROM order_items oi 
+                    LEFT JOIN products p ON oi.produto_codigo = p.codigo
+                    WHERE oi.order_id = mlo.id AND p.cod_imagem IS NOT NULL AND p.cod_imagem != ''
+                ) as codigos_imagens,
+
                 COUNT(*) OVER() as total_count
             FROM ${TABLE_NAME} mlo LEFT JOIN shipping_batches sb ON mlo.shipping_batch_id = sb.id 
             ${whereSql}

@@ -443,6 +443,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 empacotadorName = `Empacotador: ${order.empacotador}`;
             }
 
+            let imagesHtml = '';
+            if (order.codigos_imagens) {
+                const imgCodes = order.codigos_imagens.split(',').filter(c => c.trim() !== '');
+                const MAX_IMAGES = 6;
+                const visibleCodes = imgCodes.slice(0, MAX_IMAGES);
+                const extraCount = imgCodes.length - MAX_IMAGES;
+
+                // Tamanho dinâmico: ainda maior conforme pedido
+                const size = imgCodes.length === 1 ? '90px' : '65px';
+
+                let imgs = visibleCodes.map(code =>
+                    `<img src="/api/produto-imagem/${code.trim()}" 
+                          alt="Produto" 
+                          onerror="this.style.display='none'" 
+                          style="width: ${size}; height: ${size}; object-fit: contain; border-radius: 6px; border: 1px solid #dee2e6; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-shrink: 0;"
+                     >`
+                ).join('');
+
+                if (extraCount > 0) {
+                    imgs += `<div style="width: ${size}; height: ${size}; border-radius: 6px; background: #f8f9fa; border: 1px solid #dee2e6; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: bold; color: #6c757d; box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-shrink: 0;">+${extraCount}</div>`;
+                }
+
+                imagesHtml = `<div class="order-images-preview" style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; align-items: center; max-width: 320px;">${imgs}</div>`;
+            }
+
             return `
                 <article class="card order-card-row ${isSelected ? 'selected' : ''}" data-id="${order.id}">
                     
@@ -476,13 +501,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
 
-                        <div class="order-note-block" style="margin-top: 10px; padding: 8px; background-color: #f8f9fa; border-radius: 4px; border-left: 3px solid #ffc107;">
-                            <span class="detail-label" style="display: block; font-size: 0.8em; color: #666; margin-bottom: 2px;">Nota do Pedido (Duplo clique para editar):</span>
-                            <span class="note-display" 
-                                  style="cursor: pointer; display: block; min-height: 20px; font-style: ${order.nota_pedido ? 'normal' : 'italic'}; color: ${order.nota_pedido ? '#333' : '#999'};"
-                                  ondblclick="window.OrdersApp.editNote('${order.id}', this)">
-                                ${order.nota_pedido ? order.nota_pedido : 'Clique duas vezes para adicionar uma nota...'}
-                            </span>
+                        <div style="display: flex; justify-content: space-between; align-items: stretch; gap: 15px; margin-top: 10px;">
+                            <div class="order-note-block" style="flex: 1; padding: 8px; background-color: #f8f9fa; border-radius: 4px; border-left: 3px solid #ffc107;">
+                                <span class="detail-label" style="display: block; font-size: 0.8em; color: #666; margin-bottom: 2px;">Nota do Pedido (Duplo clique para editar):</span>
+                                <span class="note-display" 
+                                      style="cursor: pointer; display: block; min-height: 20px; font-style: ${order.nota_pedido ? 'normal' : 'italic'}; color: ${order.nota_pedido ? '#333' : '#999'};"
+                                      ondblclick="window.OrdersApp.editNote('${order.id}', this)">
+                                    ${order.nota_pedido ? order.nota_pedido : 'Clique duas vezes para adicionar uma nota...'}
+                                </span>
+                            </div>
+                            
+                            ${imagesHtml ? `
+                            <div style="display: flex; align-items: center; justify-content: flex-end;">
+                                ${imagesHtml}
+                            </div>
+                            ` : ''}
                         </div>
 
                     </div>
@@ -513,20 +546,22 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="detail-label">Nota Fiscal:</span>
                             ${order.nfe_numero
                     ? `<span class="nfe-tag">${order.nfe_numero}</span>`
-                    : `<span class=\"nfe-missing\">Pendente</span>`}
+                    : `<span class="nfe-missing">Pendente</span>`}
                         </div>
                     </div>
 
-                    <div>
+                    <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; min-width: 140px;">
                         <div class="header-dates-right" style="text-align: right; font-size: 0.85rem; color: #6c757d; white-space: nowrap; margin-left: 10px;">
                             ${order.data_venda ? `<div style="margin-bottom: 2px;">Venda: <strong style="color: #343a40;">${formatDateTimeAcao(order.data_venda)}</strong></div>` : ''}
                             ${order.data_acao ? `<div>Ação: <strong style="color: #343a40;">${formatDateTimeAcao(order.data_acao)}</strong></div>` : ''}
                         </div>
-                        <br><br>
-                        <div class="order-actions">
-                            ${labelButtonHtml}
-                            <i class="icon-chevron-right action-arrow"></i>
-                        </div>            
+                        
+                        <div style="margin-top: auto; padding-top: 10px; width: 100%; display: flex; flex-direction: column; align-items: flex-end;">
+                            <div class="order-actions" style="margin-top: 5px;">
+                                ${labelButtonHtml}
+                                <i class="icon-chevron-right action-arrow"></i>
+                            </div>
+                        </div>
                     </div>
                 </article>
             `;
@@ -696,28 +731,28 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatDateTime(dateString) {
         if (!dateString) return '-';
         const date = new Date(dateString);
-        
+
         // Subtrai exatamente 1 dia à data original
         date.setDate(date.getDate() - 1);
 
-        return date.toLocaleString('pt-BR', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            year: 'numeric', 
-            hour: '2-digit', 
-            minute: '2-digit' 
+        return date.toLocaleString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         });
     }
 
     function formatDateTimeAcao(dateString) {
         if (!dateString) return '-';
         const date = new Date(dateString);
-        return date.toLocaleString('pt-BR', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            year: 'numeric', 
-            hour: '2-digit', 
-            minute: '2-digit' 
+        return date.toLocaleString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         });
     }
 
