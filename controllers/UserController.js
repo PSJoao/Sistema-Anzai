@@ -51,12 +51,6 @@ const renderEditForm = async (req, res) => {
     try {
         const userId = req.params.id;
 
-        // CORREÇÃO: Verifica se o utilizador está a tentar editar-se a si mesmo
-        if (req.user.id == userId) {
-            console.warn(`[UserController] Utilizador ${req.user.username} tentou editar o próprio perfil via /admin.`);
-            return res.redirect('/admin/users?error=self_edit_forbidden');
-        }
-
         const userToEdit = await UserService.getUserById(userId);
 
         if (!userToEdit) {
@@ -81,11 +75,7 @@ const renderEditForm = async (req, res) => {
 const handleUpdateUser = async (req, res) => {
     const userId = req.params.id;
 
-    if (req.user.id == userId) {
-         return res.redirect('/admin/users?error=self_edit_forbidden');
-    }
-    
-    const { username, role, is_active } = req.body;
+    const { username, role, is_active, password } = req.body;
     
     try {
         // Converte 'is_active' (que vem do form) para boolean
@@ -96,6 +86,11 @@ const handleUpdateUser = async (req, res) => {
             role, 
             is_active: activeBoolean 
         });
+
+        if (password && password.trim() !== '') {
+            await UserService.updatePassword(userId, password.trim());
+        }
+
         res.redirect('/admin/users?success=update');
     } catch (error) {
         console.error('Erro ao atualizar utilizador:', error);

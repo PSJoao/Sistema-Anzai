@@ -13,7 +13,7 @@ const User = {
     async findByUsername(username) {
         try {
             const query = {
-                text: 'SELECT * FROM users WHERE username = $1',
+                text: 'SELECT * FROM users WHERE username = $1 AND is_active = true',
                 values: [username],
             };
             const { rows } = await db.query(query.text, query.values);
@@ -38,7 +38,7 @@ const User = {
                 values: [id],
             };
             const { rows } = await db.query(query.text, query.values);
-            
+
             // Retorna o usuário (sem a senha)
             return rows[0] || null;
         } catch (error) {
@@ -94,6 +94,7 @@ const User = {
                 text: `
                     SELECT id, username, role, is_active, created_at, updated_at 
                     FROM users
+                    WHERE is_active = true
                     ORDER BY username
                 `,
             };
@@ -122,9 +123,9 @@ const User = {
                 `,
                 values: [username, role, is_active, id],
             };
-            
+
             const { rows } = await db.query(query.text, query.values);
-            
+
             if (rows.length === 0) {
                 throw new Error('Utilizador não encontrado para atualização.');
             }
@@ -140,34 +141,62 @@ const User = {
     },
 
     /**
+     * Atualiza a senha de um utilizador no banco.
+     * @param {number} id - O ID do utilizador a ser atualizado.
+     * @param {string} hashedPassword - A nova senha com hash.
+     * @returns {Promise<object>} O utilizador atualizado.
+     */
+    async updatePassword(id, hashedPassword) {
+        try {
+            const query = {
+                text: `
+                    UPDATE users
+                    SET password_hash = $1
+                    WHERE id = $2
+                    RETURNING id, username
+                `,
+                values: [hashedPassword, id],
+            };
+
+            const { rows } = await db.query(query.text, query.values);
+
+            if (rows.length === 0) {
+                throw new Error('Utilizador não encontrado para atualização de senha.');
+            }
+            return rows[0];
+        } catch (error) {
+            console.error('Erro ao atualizar senha:', error);
+            throw error;
+        }
+    },
+
+    /**
      * Elimina um utilizador do banco de dados.
      * @param {number} id - O ID do utilizador a ser eliminado.
      * @returns {Promise<object>} O utilizador que foi eliminado.
      */
     async deleteById(id) {
-         try {
-            // (Nota: Em sistemas reais, podemos preferir 'is_active = false' 
-            // em vez de DELETE para manter o histórico de logs)
+        try {
             const query = {
                 text: `
-                    DELETE FROM users 
+                    UPDATE users
+                    SET is_active = false
                     WHERE id = $1
                     RETURNING id, username
                 `,
                 values: [id],
             };
             const { rows } = await db.query(query.text, query.values);
-            
+
             if (rows.length === 0) {
                 throw new Error('Utilizador não encontrado para eliminação.');
             }
             return rows[0];
         } catch (error) {
             console.error('Erro ao eliminar utilizador:', error);
-            // (Verificar restrições de chave estrangeira, ex: logs)
-            if (error.code === '23503') {
-                 throw new Error('Não é possível eliminar este utilizador pois ele possui logs associados.');
-            }
+            //if (error.code === '23503') {
+            //    throw new Error('Não é possível eliminar este utilizador pois ele possui logs associados.');
+            //}
             throw error;
         }
     }

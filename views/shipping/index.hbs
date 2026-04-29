@@ -16,6 +16,24 @@
     </div>
 {{/if}}
 
+<!-- Card de Estatísticas do Shipping -->
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-body" style="padding: 0.75rem 1rem; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <strong style="font-size: 1.1rem; color: var(--text-primary);">Total a Enviar: <span id="stat-total">{{stats.total}}</span></strong>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.9rem;">
+            <span>Hoje: <strong id="stat-hoje" style="color: var(--primary-color);">{{stats.hoje}}</strong></span>
+            <span>Atrasados: <strong id="stat-atrasado" style="color: var(--secondary-color);">{{stats.atrasado}}</strong></span>
+            <span>Futuro: <strong id="stat-futuro" style="color: var(--text-muted, #9ca3af);">{{stats.futuro}}</strong></span>
+        </div>
+        <div style="display: flex; align-items: center; font-size: 0.95rem;">
+            <span style="color: var(--text-secondary);">Enviados Hoje: </span>
+            <strong id="stat-enviados-hoje" style="color: var(--success-color); margin-left: 0.25rem;">{{stats.enviadosHoje}}</strong>
+        </div>
+    </div>
+</div>
+
 <section class="shipping-app">
     <!-- Lista de Pedidos Pendentes para Expedição -->
     <div class="shipping-list-header">
@@ -34,7 +52,7 @@
             </thead>
             <tbody>
                 {{#each pendingOrders}}
-                    <tr data-pedido="{{numero_venda}}">
+                    <tr data-pedido="{{numero_venda}}" data-prazo="{{data_envio_limite}}">
                         <td>
                             {{#if codigo_empresa}}
                                 <span class="badge" style="background:#eee; color:#333; border:1px solid #ddd;">

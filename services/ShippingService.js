@@ -64,6 +64,11 @@ const ShippingService = {
     return await MercadoLivreOrder.getCheckedPendingOrders();
   },
 
+  // Retorna o total de pedidos conferidos (enviados) no dia atual
+  async getShippedTodayCount() {
+    return await MercadoLivreOrder.getShippedTodayCount();
+  },
+
   // Finaliza o lote atual (cria o romaneio e vincula os pedidos que já foram enviados)
   async finalizeBatch(userId) {
     const pendingOrders = await this.getPendingCheckedOrders();

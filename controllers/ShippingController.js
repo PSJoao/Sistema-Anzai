@@ -9,12 +9,46 @@ const ShippingController = {
     try {
       const pendingOrders = await ShippingService.getPendingOrdersForShipping();
       const checkedOrders = await ShippingService.getPendingCheckedOrders();
-      
+      const shippedTodayCount = await ShippingService.getShippedTodayCount();
+
+      // Calcula as estatísticas
+      const stats = {
+          total: pendingOrders.length,
+          hoje: 0,
+          atrasado: 0,
+          futuro: 0,
+          enviadosHoje: shippedTodayCount
+      };
+
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+
+      pendingOrders.forEach(order => {
+          if (!order.data_envio_limite) {
+              // Se não tem limite, podemos classificar como hoje (ou futuro, mas pela regra de pendência assumiremos hoje para simplificar, ou contar apenas no total)
+              // Pela instrução "se tiver data limite de envio", vamos focar nela:
+              stats.hoje++;
+              return;
+          }
+          
+          const limite = new Date(order.data_envio_limite);
+          limite.setHours(0, 0, 0, 0);
+
+          if (limite.getTime() < hoje.getTime()) {
+              stats.atrasado++;
+          } else if (limite.getTime() === hoje.getTime()) {
+              stats.hoje++;
+          } else {
+              stats.futuro++;
+          }
+      });
+
       res.render('shipping/index', {
         user: req.user,
         activePage: 'expedicao',
         pendingOrders,
-        checkedOrders
+        checkedOrders,
+        stats
       });
     } catch (error) {
       console.error('[ShippingController] Erro ao carregar página:', error);

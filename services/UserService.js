@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const AuthService = require('./AuthService'); // Reutilizamos o register
+const bcrypt = require('bcryptjs');
 
 const UserService = {
     
@@ -29,6 +30,13 @@ const UserService = {
             throw new Error('Campos em falta para atualização.');
         }
         return await User.update(id, { username, role, is_active });
+    },
+
+    async updatePassword(id, newPassword) {
+        if (!newPassword) throw new Error('A nova senha não pode estar vazia.');
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        return await User.updatePassword(id, hashedPassword);
     },
 
     async deleteUser(id) {

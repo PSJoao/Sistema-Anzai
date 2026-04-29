@@ -63,12 +63,12 @@ const INSERT_COLUMNS = [
   'codigo_empresa',
   'divergencia_envio',
   'situacao_manual',
-  'is_flex', 
+  'is_flex',
   'dev_historico',
   'nota_pedido',
   'medicao',
-  'id_envio_dev',          
-  'status_dev_api',        
+  'id_envio_dev',
+  'status_dev_api',
   'status_envio_dev_api'
 ];
 
@@ -259,10 +259,10 @@ const MercadoLivreOrder = {
     // Isso acontece quando o pedido tem vários itens (várias linhas na planilha).
     const uniqueOrdersMap = new Map();
     for (const row of orderRows) {
-        // Se já existe no map, ignoramos as próximas ocorrências (pegamos apenas a primeira linha do pedido)
-        if (row.numero_venda && !uniqueOrdersMap.has(row.numero_venda)) {
-            uniqueOrdersMap.set(row.numero_venda, row);
-        }
+      // Se já existe no map, ignoramos as próximas ocorrências (pegamos apenas a primeira linha do pedido)
+      if (row.numero_venda && !uniqueOrdersMap.has(row.numero_venda)) {
+        uniqueOrdersMap.set(row.numero_venda, row);
+      }
     }
     const uniqueRows = Array.from(uniqueOrdersMap.values());
     // ----------------------------------------------
@@ -315,11 +315,11 @@ const MercadoLivreOrder = {
     };
 
     try {
-        const { rows } = await db.query(query.text, query.values);
-        return rows;
+      const { rows } = await db.query(query.text, query.values);
+      return rows;
     } catch (error) {
-        console.error('Erro ao buscar pedidos por NFe:', error);
-        return [];
+      console.error('Erro ao buscar pedidos por NFe:', error);
+      return [];
     }
   },
   // ---------------------
@@ -334,29 +334,29 @@ const MercadoLivreOrder = {
     let baseWhere = []; // Filtros globais (Empresa, Busca) aplicados a TUDO
 
     if (platformFilter && platformFilter !== 'todos') {
-        values.push(platformFilter);
-        baseWhere.push(`plataforma = $${paramCount}`);
-        paramCount++;
+      values.push(platformFilter);
+      baseWhere.push(`plataforma = $${paramCount}`);
+      paramCount++;
     }
 
     // Filtro Período
     if (startDate && endDate) {
-        values.push(startDate);
-        values.push(endDate);
-        // Casting para date garante que pegue o dia todo (00:00 até 23:59 implicitamente se a lógica do front mandar datas cheias)
-        baseWhere.push(`data_acao::date >= $${paramCount} AND data_acao::date <= $${paramCount + 1}`);
-        paramCount += 2;
+      values.push(startDate);
+      values.push(endDate);
+      // Casting para date garante que pegue o dia todo (00:00 até 23:59 implicitamente se a lógica do front mandar datas cheias)
+      baseWhere.push(`data_acao::date >= $${paramCount} AND data_acao::date <= $${paramCount + 1}`);
+      paramCount += 2;
     }
 
     // Filtro Mediação
     if (mediationFilter && mediationFilter !== 'todos') {
-        if (mediationFilter === 'sem_mediacao') {
-             baseWhere.push(`medicao IS NULL`);
-        } else {
-             values.push(mediationFilter); // 'aberta' ou 'fechada'
-             baseWhere.push(`medicao = $${paramCount}`);
-             paramCount++;
-        }
+      if (mediationFilter === 'sem_mediacao') {
+        baseWhere.push(`medicao IS NULL`);
+      } else {
+        values.push(mediationFilter); // 'aberta' ou 'fechada'
+        baseWhere.push(`medicao = $${paramCount}`);
+        paramCount++;
+      }
     }
 
     //Filtro Histórico Dev
@@ -368,25 +368,25 @@ const MercadoLivreOrder = {
 
     // Filtro flex
     if (flexFilter === 'true' || flexFilter === true) {
-        // Se filtro ativado, busca quem tem 't'
-        baseWhere.push(`is_flex = 't'`);
+      // Se filtro ativado, busca quem tem 't'
+      baseWhere.push(`is_flex = 't'`);
     } else {
-        // Se desativado, busca 'f' OU NULL (para garantir legado)
-        baseWhere.push(`(is_flex = 'f' OR is_flex IS NULL)`);
+      // Se desativado, busca 'f' OU NULL (para garantir legado)
+      baseWhere.push(`(is_flex = 'f' OR is_flex IS NULL)`);
     }
 
     // 1. Filtro de Empresa Global
     if (companyFilter && companyFilter !== 'todos') {
-        values.push(companyFilter);
-        baseWhere.push(`codigo_empresa = $${paramCount}`);
-        paramCount++;
+      values.push(companyFilter);
+      baseWhere.push(`codigo_empresa = $${paramCount}`);
+      paramCount++;
     }
 
     // 2. Busca Global
     if (search) {
-        const searchTerm = `%${search}%`;
-        values.push(searchTerm);
-        baseWhere.push(`(
+      const searchTerm = `%${search}%`;
+      values.push(searchTerm);
+      baseWhere.push(`(
             numero_venda ILIKE $${paramCount} OR 
             pack_id ILIKE $${paramCount} OR
             comprador ILIKE $${paramCount} OR 
@@ -395,7 +395,7 @@ const MercadoLivreOrder = {
             codigo_empresa ILIKE $${paramCount} OR
             CAST(id AS TEXT) = $${paramCount}
         )`);
-        paramCount++;
+      paramCount++;
     }
 
     const whereSql = baseWhere.length > 0 ? `WHERE ${baseWhere.join(' AND ')}` : '';
@@ -404,10 +404,10 @@ const MercadoLivreOrder = {
     // Se estou na aba "Separados", quero ver quantos "Atrasados" existem DENTRO de "Separados".
     let statusCondition = 'TRUE'; // Default: conta tudo
     if (statusFilter && statusFilter !== 'todos') {
-        values.push(statusFilter);
-        // Mesma lógica do findAdvanced: considera a sobrecarga manual
-        statusCondition = `(situacao_manual = $${paramCount} OR (situacao_manual IS NULL AND status_bucket = $${paramCount}))`;
-        paramCount++;
+      values.push(statusFilter);
+      // Mesma lógica do findAdvanced: considera a sobrecarga manual
+      statusCondition = `(situacao_manual = $${paramCount} OR (situacao_manual IS NULL AND status_bucket = $${paramCount}))`;
+      paramCount++;
     }
 
     const query = `
@@ -465,85 +465,85 @@ const MercadoLivreOrder = {
     let whereClauses = [];
 
     if (platformFilter && platformFilter !== 'todos') {
-        values.push(platformFilter);
-        whereClauses.push(`mlo.plataforma = $${paramCount}`);
-        paramCount++;
+      values.push(platformFilter);
+      whereClauses.push(`mlo.plataforma = $${paramCount}`);
+      paramCount++;
     }
 
     //Filtro de Período
     if (startDate && endDate) {
-        values.push(startDate);
-        values.push(endDate);
-        whereClauses.push(`mlo.data_acao::date >= $${paramCount} AND mlo.data_acao::date <= $${paramCount + 1}`);
-        paramCount += 2;
+      values.push(startDate);
+      values.push(endDate);
+      whereClauses.push(`mlo.data_acao::date >= $${paramCount} AND mlo.data_acao::date <= $${paramCount + 1}`);
+      paramCount += 2;
     }
 
     //Filtro de Histórico Dev
     if (devHistorico && devHistorico !== 'todos') {
-        values.push(devHistorico);
-        whereClauses.push(`mlo.dev_historico = $${paramCount}`);
-        paramCount++;
+      values.push(devHistorico);
+      whereClauses.push(`mlo.dev_historico = $${paramCount}`);
+      paramCount++;
     }
 
     //Filtro de Mediação
     if (mediationFilter && mediationFilter !== 'todos') {
-        if (mediationFilter === 'sem_mediacao') {
-             whereClauses.push(`mlo.medicao IS NULL`);
-        } else {
-             values.push(mediationFilter);
-             whereClauses.push(`mlo.medicao = $${paramCount}`);
-             paramCount++;
-        }
+      if (mediationFilter === 'sem_mediacao') {
+        whereClauses.push(`mlo.medicao IS NULL`);
+      } else {
+        values.push(mediationFilter);
+        whereClauses.push(`mlo.medicao = $${paramCount}`);
+        paramCount++;
+      }
     }
 
     // Filtro de flex
     if (flexFilter === 'true' || flexFilter === true) {
-        whereClauses.push(`mlo.is_flex = 't'`);
+      whereClauses.push(`mlo.is_flex = 't'`);
     } else {
-        whereClauses.push(`(mlo.is_flex = 'f' OR mlo.is_flex IS NULL)`);
+      whereClauses.push(`(mlo.is_flex = 'f' OR mlo.is_flex IS NULL)`);
     }
 
     // 1. Filtro de Fluxo (Considerando a Situação Manual)
     if (statusFilter && statusFilter !== 'todos') {
-        values.push(statusFilter);
-        // LÓGICA CORRIGIDA:
-        // Se a situação manual for igual ao filtro 
-        // OU (se a situação manual for nula E o bucket for igual ao filtro)
-        whereClauses.push(`(
+      values.push(statusFilter);
+      // LÓGICA CORRIGIDA:
+      // Se a situação manual for igual ao filtro 
+      // OU (se a situação manual for nula E o bucket for igual ao filtro)
+      whereClauses.push(`(
             mlo.situacao_manual = $${paramCount} 
             OR (mlo.situacao_manual IS NULL AND mlo.status_bucket = $${paramCount})
         )`);
-        paramCount++;
+      paramCount++;
     }
 
     // 2. Filtro de Prazo (Datas)
     if (dateFilter && dateFilter !== 'todos') {
-        switch (dateFilter) {
-            case 'hoje': whereClauses.push(`(${SQL_CONDITION_HOJE})`); break;
-            case 'atrasados': whereClauses.push(`(${SQL_CONDITION_ATRASADOS})`); break;
-            case 'futuros': whereClauses.push(`(${SQL_CONDITION_FUTUROS})`); break;
-            case 'agendados': whereClauses.push(`(${SQL_CONDITION_AGENDADOS})`); break;
-            case 'cancelados': whereClauses.push(`(${SQL_CONDITION_CANCELADOS})`); break;
-            case 'entregues': whereClauses.push(`(${SQL_CONDITION_ENTREGUES})`); break;
-        }
+      switch (dateFilter) {
+        case 'hoje': whereClauses.push(`(${SQL_CONDITION_HOJE})`); break;
+        case 'atrasados': whereClauses.push(`(${SQL_CONDITION_ATRASADOS})`); break;
+        case 'futuros': whereClauses.push(`(${SQL_CONDITION_FUTUROS})`); break;
+        case 'agendados': whereClauses.push(`(${SQL_CONDITION_AGENDADOS})`); break;
+        case 'cancelados': whereClauses.push(`(${SQL_CONDITION_CANCELADOS})`); break;
+        case 'entregues': whereClauses.push(`(${SQL_CONDITION_ENTREGUES})`); break;
+      }
     }
 
     // 3. Filtro de Empresa (NOVO)
     if (companyFilter && companyFilter !== 'todos') {
-        values.push(companyFilter);
-        whereClauses.push(`mlo.codigo_empresa = $${paramCount}`);
-        paramCount++;
+      values.push(companyFilter);
+      whereClauses.push(`mlo.codigo_empresa = $${paramCount}`);
+      paramCount++;
     }
 
     if (divergenceFilter === 'true') {
-        whereClauses.push(`mlo.divergencia_envio = true`);
+      whereClauses.push(`mlo.divergencia_envio = true`);
     }
 
     // 4. Busca Global
     if (search) {
-        const searchTerm = `%${search}%`;
-        values.push(searchTerm);
-        whereClauses.push(`(
+      const searchTerm = `%${search}%`;
+      values.push(searchTerm);
+      whereClauses.push(`(
             mlo.numero_venda ILIKE $${paramCount} OR 
             mlo.pack_id ILIKE $${paramCount} OR
             mlo.comprador ILIKE $${paramCount} OR 
@@ -552,13 +552,13 @@ const MercadoLivreOrder = {
             mlo.codigo_empresa ILIKE $${paramCount} OR
             CAST(mlo.id AS TEXT) = $${paramCount}
         )`);
-        paramCount++;
+      paramCount++;
     }
 
     const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
 
     const query = {
-        text: `
+      text: `
             SELECT 
                 mlo.id, mlo.numero_venda, mlo.comprador, mlo.empacotador, mlo.data_venda, mlo.status_bucket, mlo.pack_id, mlo.desc_status,
                 mlo.situacao_manual, mlo.total, mlo.unidades, mlo.plataforma, mlo.titulo_anuncio, mlo.mlb_anuncio,
@@ -592,17 +592,17 @@ const MercadoLivreOrder = {
               mlo.data_venda DESC NULLS LAST
             LIMIT $${paramCount} OFFSET $${paramCount + 1}
         `,
-        values: [...values, limit, offset]
+      values: [...values, limit, offset]
     };
 
     const { rows } = await db.query(query.text, query.values);
-    
+
     const totalItems = rows.length > 0 ? parseInt(rows[0].total_count) : 0;
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
-        data: rows,
-        meta: { totalItems, totalPages, currentPage: page, itemsPerPage: limit }
+      data: rows,
+      meta: { totalItems, totalPages, currentPage: page, itemsPerPage: limit }
     };
   },
 
@@ -753,7 +753,7 @@ const MercadoLivreOrder = {
   async updateNotaPedido(orderId, nota) {
     // Se a nota vier vazia, guardamos como NULL para poupar espaço
     const valorNota = (nota && nota.trim() !== '') ? nota.trim() : null;
-    
+
     const query = {
       text: `
         UPDATE ${TABLE_NAME}
@@ -763,7 +763,7 @@ const MercadoLivreOrder = {
       `,
       values: [orderId, valorNota]
     };
-    
+
     const { rows } = await db.query(query.text, query.values);
     return rows[0] || null;
   },
@@ -774,29 +774,29 @@ const MercadoLivreOrder = {
     // Como não existe coluna 'tipo' ou 'description', usamos o batch_number para identificação.
     // Geramos um ID único baseado no tempo para não dar conflito.
     const timestamp = Date.now();
-    const prefix = type === 'importacao' ? 'IMP' : 'MAN'; 
+    const prefix = type === 'importacao' ? 'IMP' : 'MAN';
     const finalBatchNumber = `${prefix}_${timestamp}`; // Ex: MAN_170420500123
 
     const query = {
-        text: `
+      text: `
             INSERT INTO shipping_batches (batch_number, status, created_at, closed_at)
             VALUES ($1, 'fechado', NOW(), NOW())
             RETURNING id
         `,
-        values: [finalBatchNumber]
+      values: [finalBatchNumber]
     };
-    
+
     // Nota: Deixamos user_id como NULL pois geralmente processos automáticos não têm sessão de user aqui,
     // a menos que você queira passar o ID do admin como argumento.
-    
+
     const { rows } = await db.query(query.text, query.values);
     return rows[0].id;
   },
 
   // Vincula pedidos a um lote específico e força o status para 'enviado'
   async linkOrdersToBatch(orderIds, batchId) {
-      const query = {
-          text: `
+    const query = {
+      text: `
               UPDATE mercado_livre_orders
               SET shipping_batch_id = $2,
                   conferencia_saida = true,
@@ -805,31 +805,31 @@ const MercadoLivreOrder = {
                   updated_at = NOW()
               WHERE id = ANY($1::int[])
           `,
-          values: [orderIds, batchId]
-      };
-      await db.query(query.text, query.values);
+      values: [orderIds, batchId]
+    };
+    await db.query(query.text, query.values);
   },
 
   // Remove o vínculo de lote (usado quando um pedido sai de 'enviado' para outro status)
   async unlinkOrdersFromBatch(orderIds) {
-      const query = {
-          text: `
+    const query = {
+      text: `
               UPDATE mercado_livre_orders
               SET shipping_batch_id = NULL,
                   conferencia_saida = false,
                   updated_at = NOW()
               WHERE id = ANY($1::int[])
           `,
-          values: [orderIds]
-      };
-      await db.query(query.text, query.values);
+      values: [orderIds]
+    };
+    await db.query(query.text, query.values);
   },
 
   async findByNumeroVendas(numerosVenda) {
     if (!Array.isArray(numerosVenda)) {
       numerosVenda = [numerosVenda];
     }
-    
+
     const query = {
       text: `
         SELECT 
@@ -846,7 +846,7 @@ const MercadoLivreOrder = {
       `,
       values: [numerosVenda]
     };
-    
+
     const { rows } = await db.query(query.text, query.values);
     return rows;
   },
@@ -867,8 +867,8 @@ const MercadoLivreOrder = {
   },
 
   async findReadyForShipping(term) {
-      const query = {
-          text: `
+    const query = {
+      text: `
               SELECT 
                   numero_venda, 
                   status_bucket,
@@ -883,29 +883,29 @@ const MercadoLivreOrder = {
                     chave_acesso = $1)
               GROUP BY numero_venda, status_bucket, conferencia_saida;
           `,
-          values: [term]
-      };
-      const { rows } = await db.query(query.text, query.values);
-      return rows[0]; 
+      values: [term]
+    };
+    const { rows } = await db.query(query.text, query.values);
+    return rows[0];
   },
 
   async markAsChecked(numeroVenda) {
-      const query = {
-          text: `
+    const query = {
+      text: `
               UPDATE ${TABLE_NAME}
               SET conferencia_saida = true, 
                   status_bucket = 'enviado',
                   updated_at = NOW()
               WHERE numero_venda = $1 AND status_bucket = 'em_romaneio'
           `,
-          values: [numeroVenda]
-      };
-      await db.query(query.text, query.values);
+      values: [numeroVenda]
+    };
+    await db.query(query.text, query.values);
   },
 
   async getCheckedOrderInfo(numeroVenda) {
-      const query = {
-          text: `
+    const query = {
+      text: `
               SELECT 
                   numero_venda,
                   MAX(comprador) as comprador,
@@ -914,20 +914,21 @@ const MercadoLivreOrder = {
               WHERE numero_venda = $1 AND status_bucket = 'em_romaneio' AND conferencia_saida = true
               GROUP BY numero_venda;
           `,
-          values: [numeroVenda]
-      };
-      const { rows } = await db.query(query.text, query.values);
-      return rows[0] || null;
+      values: [numeroVenda]
+    };
+    const { rows } = await db.query(query.text, query.values);
+    return rows[0] || null;
   },
 
   async getPendingOrdersForShipping() {
-      const query = {
-          text: `
+    const query = {
+      text: `
               SELECT 
                   numero_venda,
                   MAX(comprador) as comprador,
                   MAX(updated_at) as updated_at,
-                  MAX(codigo_empresa) as codigo_empresa
+                  MAX(codigo_empresa) as codigo_empresa,
+                  MAX(data_envio_limite) as data_envio_limite
               FROM ${TABLE_NAME}
               WHERE status_bucket = 'em_romaneio' 
                 AND conferencia_saida = false
@@ -936,14 +937,26 @@ const MercadoLivreOrder = {
               GROUP BY numero_venda
               ORDER BY MAX(updated_at) DESC;
           `
-      };
-      const { rows } = await db.query(query.text);
-      return rows;
+    };
+    const { rows } = await db.query(query.text);
+    return rows;
+  },
+
+  async getShippedTodayCount() {
+    const query = {
+      text: `
+              SELECT COUNT(DISTINCT mo.numero_venda) as total
+              FROM ${TABLE_NAME} mo INNER JOIN shipping_batches sb ON mo.shipping_batch_id = sb.id
+		          WHERE DATE(sb.closed_at) = DATE(CURRENT_DATE)
+          `
+    };
+    const { rows } = await db.query(query.text);
+    return parseInt(rows[0].total) || 0;
   },
 
   async getCheckedPendingOrders() {
-      const query = {
-          text: `
+    const query = {
+      text: `
               SELECT 
                   numero_venda,
                   MAX(comprador) as comprador,
@@ -955,15 +968,15 @@ const MercadoLivreOrder = {
               GROUP BY numero_venda
               ORDER BY MAX(updated_at) DESC;
           `
-      };
-      const { rows } = await db.query(query.text);
-      return rows;
+    };
+    const { rows } = await db.query(query.text);
+    return rows;
   },
 
   // Amarra os pedidos "soltos" (enviados sem lote) ao novo Romaneio criado
   async finalizeShippingBatch(batchId) {
-      const query = {
-          text: `
+    const query = {
+      text: `
               UPDATE ${TABLE_NAME}
               SET shipping_batch_id = $1, -- Apenas vincula o lote
                   updated_at = NOW()
@@ -971,53 +984,53 @@ const MercadoLivreOrder = {
                 AND conferencia_saida = true
                 AND shipping_batch_id IS NULL; -- Pega todos que estavam acumulados
           `,
-          values: [batchId]
-      };
-      const { rowCount } = await db.query(query.text, query.values);
-      return rowCount;
+      values: [batchId]
+    };
+    const { rowCount } = await db.query(query.text, query.values);
+    return rowCount;
   },
 
   // Atualiza apenas a flag de divergência de um pedido
   async updateDivergence(orderId, isDivergent) {
-      const query = {
-          text: `
+    const query = {
+      text: `
               UPDATE ${TABLE_NAME}
               SET divergencia_envio = $2, updated_at = NOW()
               WHERE id = $1
           `,
-          values: [orderId, isDivergent]
-      };
-      await db.query(query.text, query.values);
+      values: [orderId, isDivergent]
+    };
+    await db.query(query.text, query.values);
   },
 
   async findByPackId(packId) {
     if (!packId) return null;
-    
+
     const query = {
       text: `SELECT * FROM ${TABLE_NAME} WHERE pack_id = $1`,
       values: [packId]
     };
-    
+
     const { rows } = await db.query(query.text, query.values);
     return rows[0] || null;
   },
 
   // Atualiza apenas o código do anúncio (MLB...) vindo do relatório
   async updateMlbAnuncio(orderId, mlbAnuncio) {
-      if (!mlbAnuncio) return;
-      const query = {
-          text: `UPDATE ${TABLE_NAME} SET mlb_anuncio = $2 WHERE id = $1`,
-          values: [orderId, String(mlbAnuncio).trim()]
-      };
-      await db.query(query.text, query.values);
+    if (!mlbAnuncio) return;
+    const query = {
+      text: `UPDATE ${TABLE_NAME} SET mlb_anuncio = $2 WHERE id = $1`,
+      values: [orderId, String(mlbAnuncio).trim()]
+    };
+    await db.query(query.text, query.values);
   },
 
   async findForReturnResolution(term) {
-      // Limpa espaços
-      const cleanTerm = String(term).trim();
-      
-      const query = {
-          text: `
+    // Limpa espaços
+    const cleanTerm = String(term).trim();
+
+    const query = {
+      text: `
               SELECT 
                   id, 
                   numero_venda, 
@@ -1036,26 +1049,26 @@ const MercadoLivreOrder = {
                   OR id_envio_dev = $1
               LIMIT 1
           `,
-          values: [cleanTerm]
-      };
-      
-      const { rows } = await db.query(query.text, query.values);
-      return rows[0] || null;
+      values: [cleanTerm]
+    };
+
+    const { rows } = await db.query(query.text, query.values);
+    return rows[0] || null;
   },
 
   /**
    * Marca uma devolução como 'resolvida'.
    */
   async resolveReturn(orderId) {
-      const query = {
-          text: `
+    const query = {
+      text: `
               UPDATE ${TABLE_NAME}
               SET dev_historico = 'resolvido', updated_at = NOW()
               WHERE id = $1
           `,
-          values: [orderId]
-      };
-      await db.query(query.text, query.values);
+      values: [orderId]
+    };
+    await db.query(query.text, query.values);
   },
 
   /**
@@ -1063,8 +1076,8 @@ const MercadoLivreOrder = {
    * Usado para montar a lista lateral dinâmica na estação de empacotamento.
    */
   async getOrdersReadyToPack(plataforma = 'mercado_livre') {
-      const query = {
-          text: `
+    const query = {
+      text: `
               SELECT 
                   mlo.numero_venda,
                   MAX(mlo.comprador) as comprador,
@@ -1090,12 +1103,12 @@ const MercadoLivreOrder = {
               ORDER BY 
                   MAX(mlo.data_envio_limite) ASC NULLS LAST
           `,
-          values: [plataforma] // <-- NOVO: Array de valores necessário agora
-      };
+      values: [plataforma] // <-- NOVO: Array de valores necessário agora
+    };
 
-      // --- ALTERADO: db.query agora recebe os values ---
-      const { rows } = await db.query(query.text, query.values);
-      return rows;
+    // --- ALTERADO: db.query agora recebe os values ---
+    const { rows } = await db.query(query.text, query.values);
+    return rows;
   }
 
 };

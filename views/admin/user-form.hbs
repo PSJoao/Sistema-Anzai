@@ -1,5 +1,5 @@
 <div class="form-card-container">
-    
+
     <div class="card">
         <div class="card-header">
             <h1 class="card-title">{{formTitle}}</h1>
@@ -7,47 +7,49 @@
 
         <div class="card-body">
             <form action="{{formAction}}" method="POST">
-                
+
                 {{#if error}}
-                    <div id="page-feedback" 
-                        data-type="error" 
-                        data-title="Erro ao Salvar"
-                        data-message="{{error}}">
-                    </div>
+                <div id="page-feedback" data-type="error" data-title="Erro ao Salvar" data-message="{{error}}">
+                </div>
                 {{/if}}
 
                 <div class="form-group">
                     <label for="username">Username:</label>
                     <input type="text" id="username" name="username" class="form-control"
-                           value="{{#if userToEdit}}{{userToEdit.username}}{{else}}{{username}}{{/if}}" 
-                           required>
+                        value="{{#if userToEdit}}{{userToEdit.username}}{{else}}{{username}}{{/if}}" required>
                 </div>
 
-                {{#unless isEditing}}
-                    <div class="form-group">
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" name="password" class="form-control" required>
-                    </div>
-                {{/unless}}
+                {{#if isEditing}}
+                <div class="form-group">
+                    <label for="password">Nova Senha <small>(deixe em branco para manter a atual)</small>:</label>
+                    <input type="password" id="password" name="password" class="form-control">
+                </div>
+                {{else}}
+                <div class="form-group">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" name="password" class="form-control" required>
+                </div>
+                {{/if}}
 
                 <div class="form-group">
                     <label for="role">Cargo (Role):</label>
                     <select id="role" name="role" class="form-control" required>
-                        <option value="funcionario" {{#if (eq userToEdit.role "funcionario")}}selected{{/if}}>Funcionário</option>
-                        <option value="admin" {{#if (eq userToEdit.role "admin")}}selected{{/if}}>Admin</option>
+                        <option value="funcionario" {{#if (eq userToEdit.role "funcionario" )}}selected{{/if}}>
+                            Funcionário</option>
+                        <option value="admin" {{#if (eq userToEdit.role "admin" )}}selected{{/if}}>Admin</option>
                     </select>
                 </div>
 
-                <!--{{#if isEditing}}
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input type="checkbox" id="is_active" name="is_active" class="form-check-input"
-                                   {{#if userToEdit.is_active}}checked{{/if}}>
-                            <label for="is_active" class="form-check-label">Utilizador Ativo</label>
-                        </div>
+                {{#if isEditing}}
+                <div class="form-group">
+                    <div class="form-check">
+                        <input type="checkbox" id="is_active" name="is_active" class="form-check-input" {{#if
+                            userToEdit.is_active}}checked{{/if}}>
+                        <label for="is_active" class="form-check-label">Utilizador Ativo</label>
                     </div>
-                {{/if}} -->
-                
+                </div>
+                {{/if}}
+
                 <div class="form-footer">
                     <a href="/admin/users" class="btn btn-outline">Cancelar</a>
                     <button type="submit" class="btn btn-primary">Salvar</button>

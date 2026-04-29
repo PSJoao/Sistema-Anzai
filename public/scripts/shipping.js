@@ -35,6 +35,8 @@
         
         for (let row of rows) {
             if (row.getAttribute('data-pedido') === numeroVenda) {
+                const prazo = row.getAttribute('data-prazo');
+                updateStats(prazo);
                 row.remove();
                 removed = true;
                 break;
@@ -56,6 +58,50 @@
                 emptyRow.innerHTML = '<td colspan="2">Nenhum pedido pendente para expedição no momento.</td>';
                 pendingTableBody.appendChild(emptyRow);
             }
+        }
+    }
+
+    function updateStats(prazoValue) {
+        // Obter os elementos
+        const statTotal = document.getElementById('stat-total');
+        const statHoje = document.getElementById('stat-hoje');
+        const statAtrasado = document.getElementById('stat-atrasado');
+        const statFuturo = document.getElementById('stat-futuro');
+        const statEnviadosHoje = document.getElementById('stat-enviados-hoje');
+
+        if (!statTotal) return;
+
+        // Decrementar Total
+        statTotal.textContent = Math.max(0, parseInt(statTotal.textContent) - 1);
+
+        // Incrementar Enviados Hoje
+        if (statEnviadosHoje) {
+            statEnviadosHoje.textContent = parseInt(statEnviadosHoje.textContent) + 1;
+        }
+
+        // Verificar prazo e decrementar o respectivo contador
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        if (!prazoValue) {
+            if (statHoje) statHoje.textContent = Math.max(0, parseInt(statHoje.textContent) - 1);
+            return;
+        }
+
+        // Se tem prazo definido, precisamos compensar o timezone porque as datas do banco
+        // vêm em UTC ou string simples. Para simplificar e bater com a lógica do backend:
+        // A data vem como "2024-04-10T00:00:00.000Z" ou similar.
+        const limite = new Date(prazoValue);
+        // Ajustar para hora local
+        const limiteLocal = new Date(limite.getTime() + limite.getTimezoneOffset() * 60000);
+        limiteLocal.setHours(0, 0, 0, 0);
+
+        if (limiteLocal.getTime() < hoje.getTime()) {
+            if (statAtrasado) statAtrasado.textContent = Math.max(0, parseInt(statAtrasado.textContent) - 1);
+        } else if (limiteLocal.getTime() === hoje.getTime()) {
+            if (statHoje) statHoje.textContent = Math.max(0, parseInt(statHoje.textContent) - 1);
+        } else {
+            if (statFuturo) statFuturo.textContent = Math.max(0, parseInt(statFuturo.textContent) - 1);
         }
     }
 
