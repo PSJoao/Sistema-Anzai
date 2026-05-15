@@ -319,7 +319,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function updatePlatformVisuals() {
         if (!elements.flexFilterContainer) return;
 
-        if (state.plataforma === 'shopee') {
+        // Esconde o botão de Flex se a plataforma for Shopee OU Amazon
+        if (state.plataforma === 'shopee' || state.plataforma === 'amazon') {
             elements.flexFilterContainer.style.display = 'none';
 
             // Segurança: Se o filtro Flex estivesse ativo, nós desligamos para não bugar a busca
@@ -490,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         
                         <div class="order-details-block">
-                            ${state.plataforma === 'shopee' || order.plataforma === 'shopee' ? '' : `<span class="detail-value" style="color: #3457D5;">${order.pack_id || ''}</span>`}
+                            ${['shopee', 'amazon'].includes(state.plataforma) || ['shopee', 'amazon'].includes(order.plataforma) ? '' : `<span class="detail-value" style="color: #3457D5;">${order.pack_id || ''}</span>`}
                             <div class="detail-row">
                                 <span class="detail-label">Comprador:</span>
                                 <span class="detail-value text-uppercase">${nomeComprador}</span>

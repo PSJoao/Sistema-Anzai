@@ -4,6 +4,7 @@
 const ProductService = require('../services/ProductService');
 const OrderService = require('../services/OrderService');
 const db = require('../config/database');
+const SeparationConfig = require('../models/SeparationConfig');
 
 function parseDepartmentCode(value) {
   const code = Number.parseInt(value, 10);
@@ -13,42 +14,49 @@ function parseDepartmentCode(value) {
 const SeparationController = {
 
   _normalizeFilters(req) {
-      let filters = {};
-      if (req.method === 'GET') {
-          filters.companyFilter = req.query.company || 'todos';
-          let deadlines = req.query.deadlines;
-          if (deadlines && !Array.isArray(deadlines)) deadlines = [deadlines];
-          if (!deadlines || deadlines.length === 0) deadlines = ['atrasado', 'hoje'];
-          filters.deadlines = deadlines;
-      } else {
-          filters = req.body.filters || {};
-          filters.companyFilter = filters.companyFilter || 'todos';
-          let deadlines = filters.deadlines;
-          if (deadlines && !Array.isArray(deadlines)) deadlines = [deadlines];
-          if (!deadlines || deadlines.length === 0) deadlines = ['atrasado', 'hoje'];
-          filters.deadlines = deadlines;
-      }
-      return filters;
+    let filters = {};
+    if (req.method === 'GET') {
+      filters.companyFilter = req.query.company || 'todos';
+      let deadlines = req.query.deadlines;
+      if (deadlines && !Array.isArray(deadlines)) deadlines = [deadlines];
+      if (!deadlines || deadlines.length === 0) deadlines = ['atrasado', 'hoje'];
+      filters.deadlines = deadlines;
+    } else {
+      filters = req.body.filters || {};
+      filters.companyFilter = filters.companyFilter || 'todos';
+      let deadlines = filters.deadlines;
+      if (deadlines && !Array.isArray(deadlines)) deadlines = [deadlines];
+      if (!deadlines || deadlines.length === 0) deadlines = ['atrasado', 'hoje'];
+      filters.deadlines = deadlines;
+    }
+    return filters;
   },
 
   async renderDepartmentList(req, res) {
     try {
+      // 0. Busca as configurações de bloqueio de filtros
+      const filterConfigs = await SeparationConfig.getAll();
+
       // 1. Captura e normaliza os filtros da URL
       const companyFilter = req.query.company || 'todos';
-      const plataforma = req.query.plataforma || 'mercado_livre'; // <--- NOVO: Captura a plataforma
-      
-      // Checkboxes podem vir como string ou array. Normalizamos para array.
-      let deadlines = req.query.deadlines || ['atrasado', 'hoje']; // Default inteligente
+      const plataforma = req.query.plataforma || 'mercado_livre';
+
+      let deadlines = req.query.deadlines || ['atrasado', 'hoje'];
       if (!Array.isArray(deadlines)) deadlines = [deadlines];
 
-      // 2. Busca departamentos aplicando os filtros
+      // --- FILTRAGEM DE SEGURANÇA ---
+      // Removemos da busca qualquer prazo que esteja bloqueado pela configuração de horário
+      deadlines = deadlines.filter(d => filterConfigs[d] ? filterConfigs[d].isActive : true);
+      // ------------------------------
+
+      // 2. Busca departamentos aplicando os filtros (agora blindados)
       const departments = await ProductService.getDepartmentsWithPending({
-          companyFilter,
-          deadlines,
-          plataforma // <--- NOVO: Filtra os cartões pela plataforma
+        companyFilter,
+        deadlines,
+        plataforma
       });
 
-      // 3. Busca a lista de empresas disponíveis (para preencher o <select>)
+      // 3. Busca a lista de empresas disponíveis
       const companies = await OrderService.getCompanies();
 
       // 4. Prepara labels dos departamentos
@@ -62,11 +70,10 @@ const SeparationController = {
         activePage: 'separacao',
         departments,
         departmentLabels,
-        
-        // Novos dados para a View
-        companies, 
+        companies,
         activeCompany: companyFilter,
-        activeDeadlines: deadlines
+        activeDeadlines: deadlines,
+        filterConfigs // Enviamos para a view gerenciar o painel administrativo
       });
     } catch (error) {
       console.error('[SeparationController.renderDepartmentList] Erro:', error);
@@ -128,8 +135,8 @@ const SeparationController = {
 
       if (!result) {
         // Mensagem clara para o usuário final
-        return res.status(404).json({ 
-            message: 'Nada encontrado. Verifique se o item pertence a este setor ou se já está sendo separado por outro colega.' 
+        return res.status(404).json({
+          message: 'Nada encontrado. Verifique se o item pertence a este setor ou se já está sendo separado por outro colega.'
         });
       }
 
@@ -144,30 +151,30 @@ const SeparationController = {
 
   async globalSearch(req, res) {
     try {
-        const { term, plataforma } = req.query; // <--- NOVO: Extrai a plataforma da URL
-        
-        if (!term) {
-            return res.status(400).json({ message: 'Termo de busca vazio.' });
-        }
+      const { term, plataforma } = req.query; // <--- NOVO: Extrai a plataforma da URL
 
-        const deptCode = await ProductService.findDepartmentByTerm(term, plataforma || 'mercado_livre'); // <--- NOVO: Envia para o DB
+      if (!term) {
+        return res.status(400).json({ message: 'Termo de busca vazio.' });
+      }
 
-        if (deptCode) {
-            return res.json({ 
-                found: true, 
-                redirectUrl: `/separacao/departamento/${deptCode}`,
-                message: `Item encontrado no Departamento ${deptCode}`
-            });
-        } else {
-            return res.json({ 
-                found: false, 
-                message: 'Nenhum item pendente encontrado para este termo.' 
-            });
-        }
+      const deptCode = await ProductService.findDepartmentByTerm(term, plataforma || 'mercado_livre'); // <--- NOVO: Envia para o DB
+
+      if (deptCode) {
+        return res.json({
+          found: true,
+          redirectUrl: `/separacao/departamento/${deptCode}`,
+          message: `Item encontrado no Departamento ${deptCode}`
+        });
+      } else {
+        return res.json({
+          found: false,
+          message: 'Nenhum item pendente encontrado para este termo.'
+        });
+      }
 
     } catch (error) {
-        console.error('[SeparationController.search] Erro:', error);
-        return res.status(500).json({ message: 'Erro interno na busca.' });
+      console.error('[SeparationController.search] Erro:', error);
+      return res.status(500).json({ message: 'Erro interno na busca.' });
     }
   },
 
@@ -232,19 +239,19 @@ const SeparationController = {
 
       try {
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        
+
         const prodInfo = result.product || {};
         const details = `Bipou SKU: ${req.body.sku} | Produto: ${prodInfo.sku} - ${prodInfo.descricao}`;
-        
+
         await db.query(
-            `INSERT INTO system_logs (user_id, action_type, details, ip_address) 
+          `INSERT INTO system_logs (user_id, action_type, details, ip_address) 
              VALUES ($1, $2, $3, $4)`,
-            [
-                req.user.id, 
-                'SEPARACAO_ITEM', // Action Type Padronizado
-                details, 
-                ip
-            ]
+          [
+            req.user.id,
+            'SEPARACAO_ITEM', // Action Type Padronizado
+            details,
+            ip
+          ]
         );
       } catch (logErr) {
         // Erro de log não deve travar a operação principal, apenas avisar no console
@@ -260,20 +267,20 @@ const SeparationController = {
 
   async confirmSeparation(req, res) {
     try {
-        const filters = SeparationController._normalizeFilters(req);
-        await ProductService.confirmSeparation(req.user.id, req.body.plataforma || 'mercado_livre', filters); // <-- Extrai do Body e repassa filtros
-        return res.json({ success: true });
+      const filters = SeparationController._normalizeFilters(req);
+      await ProductService.confirmSeparation(req.user.id, req.body.plataforma || 'mercado_livre', filters); // <-- Extrai do Body e repassa filtros
+      return res.json({ success: true });
     } catch (error) {
-        return res.status(400).json({ message: error.message });
+      return res.status(400).json({ message: error.message });
     }
   },
 
   async resetSeparation(req, res) {
     try {
-        const result = await ProductService.resetSeparation(req.user.id);
-        return res.json(result);
+      const result = await ProductService.resetSeparation(req.user.id);
+      return res.json(result);
     } catch (error) {
-        return res.status(400).json({ message: error.message });
+      return res.status(400).json({ message: error.message });
     }
   },
 
@@ -285,7 +292,40 @@ const SeparationController = {
       console.error('[SeparationController.releaseSession] Erro:', error);
       return res.status(500).json({ message: 'Não foi possível liberar a sessão.' });
     }
+  },
+
+  async api_getFilterConfig(req, res) {
+    try {
+      const config = await SeparationConfig.getAll();
+      res.json(config);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  async api_updateFilterConfig(req, res) {
+    try {
+      if (!req.user.liberar_conf) return res.status(403).json({ message: 'Acesso negado.' });
+
+      let { filterKey, isVisible, startTime, endTime } = req.body;
+
+      if (!isVisible) {
+        if (!startTime || !endTime) {
+          return res.status(400).json({ message: 'É obrigatório informar o horário de início e fim quando o filtro não é permanente.' });
+        }
+      } else {
+        startTime = null;
+        endTime = null;
+      }
+
+      await SeparationConfig.update(filterKey, isVisible, startTime, endTime);
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
+
 };
 
 module.exports = SeparationController;

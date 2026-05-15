@@ -1,7 +1,7 @@
 // middleware/uploadMiddleware.js
 const multer = require('multer');
 
-const MAX_FILE_SIZE_MB = 500; 
+const MAX_FILE_SIZE_MB = 500;
 
 // Lista de MIME types permitidos
 const ACCEPTED_MIME_TYPES = new Set([
@@ -36,8 +36,8 @@ const ACCEPTED_MIME_TYPES_TXT = new Set([
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, callback) => {
-  const isAllowedExt = file.originalname.match(/\.(zip|txt|xlsx|xls|pdf)$/i);
-  
+  const isAllowedExt = file.originalname.match(/\.(zip|txt|xlsx|xls|pdf|zpl)$/i);
+
   if (ACCEPTED_MIME_TYPES.has(file.mimetype) || isAllowedExt) {
     return callback(null, true);
   }
@@ -48,8 +48,8 @@ const fileFilter = (req, file, callback) => {
 };
 
 const fileFilterText = (req, file, callback) => {
-  const isAllowedExt = file.originalname.match(/\.(zip|txt|pdf)$/i);
-  
+  const isAllowedExt = file.originalname.match(/\.(zip|txt|pdf|zpl)$/i);
+
   if (ACCEPTED_MIME_TYPES_TXT.has(file.mimetype) || isAllowedExt) {
     return callback(null, true);
   }

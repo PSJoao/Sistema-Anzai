@@ -7,17 +7,12 @@
 </div>
 
 {{#if (lookup @root.query "error")}}
-    <div id="page-feedback"
-         data-type="error"
-         data-title="Importação falhou"
-         data-message="{{lookup @root.query "error"}}">
-    </div>
+<div id="page-feedback" data-type="error" data-title="Importação falhou" data-message="{{lookup @root.query " error"}}">
+</div>
 {{else if (lookup @root.query "success")}}
-    <div id="page-feedback"
-         data-type="success"
-         data-title="Importação concluída"
-         data-message="Processamento concluído. Itens processados: {{lookup @root.query "inserted"}} novos.">
-    </div>
+<div id="page-feedback" data-type="success" data-title="Importação concluída"
+    data-message="Processamento concluído. Itens processados: {{lookup @root.query " inserted"}} novos.">
+</div>
 {{/if}}
 
 <section class="card">
@@ -28,16 +23,17 @@
                 <select id="plataforma" name="plataforma" class="form-control" required>
                     <option value="" disabled selected>Selecione uma plataforma</option>
                     {{#each platforms}}
-                        <option value="{{id}}">{{label}}</option>
+                    <option value="{{id}}">{{label}}</option>
                     {{/each}}
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="orderFiles">Arquivos (.txt, .zip, .pdf)</label>
-                <input type="file" id="orderFiles" name="orderFiles" class="form-control" multiple accept=".txt,.zip,.pdf">
+                <label for="orderFiles">Arquivos (.txt, .zpl, .zip, .pdf)</label>
+                <input type="file" id="orderFiles" name="orderFiles" class="form-control" multiple
+                    accept=".txt,.zpl,.zip,.pdf">
                 <small class="form-text">
-                    Aceita: Etiquetas ZPL (.txt, .zip, .pdf).
+                    Aceita: Etiquetas ZPL e PDF (.txt, .zpl, .zip, .pdf).
                 </small>
             </div>
 

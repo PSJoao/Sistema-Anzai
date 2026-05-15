@@ -6,7 +6,7 @@ require('dotenv').config(); // Para aceder ao process.env.JWT_SECRET
  * Middleware para proteger rotas.
  * Verifica se o utilizador possui um JWT válido.
  */
-function protectRoute(req, res, next) {
+async function protectRoute(req, res, next) {
   // Verifica o cookie 'auth_token' que definimos no AuthController
   const token = req.cookies.auth_token;
 
@@ -25,9 +25,11 @@ function protectRoute(req, res, next) {
     // O token é válido! Decodificamos o payload (que contém id, username, role)
     // Anexamos os dados do utilizador ao objeto 'req' (req.user)
     // para que as rotas protegidas saibam *quem* está logado.
-    req.user = decodedPayload;
+    const userRecord = await require('../models/User').findById(decodedPayload.id);
 
-    res.locals.user = decodedPayload;
+    req.user = { ...decodedPayload, liberar_conf: userRecord ? userRecord.liberar_conf : false };
+
+    res.locals.user = req.user;
 
     // O utilizador está autenticado, permite que a requisição continue
     // para o próximo handler (ex: renderizar o dashboard).

@@ -34,7 +34,7 @@ const User = {
     async findById(id) {
         try {
             const query = {
-                text: 'SELECT id, username, role, is_active, created_at FROM users WHERE id = $1',
+                text: 'SELECT id, username, role, is_active, created_at, liberar_conf FROM users WHERE id = $1',
                 values: [id],
             };
             const { rows } = await db.query(query.text, query.values);

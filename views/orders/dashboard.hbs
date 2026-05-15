@@ -25,51 +25,58 @@
 <div class="container-fluid" style="padding: 0 2rem;">
     <div class="filter-group">
         <div class="filter-tabs">
-            <a href="?plataforma=mercado_livre" 
-            class="filter-tab {{#unless (eq activePlatformFilter 'shopee')}}active{{/unless}}"
-            style="text-decoration: none; font-size: 1rem; padding: 0.6rem 1.5rem; {{#unless (eq activePlatformFilter 'shopee')}}background-color: #ffe600; border-color: #ffe600; box-shadow: 0 2px 4px rgba(255, 230, 0, 0.4); color: #2d3277; font-weight: 800;{{/unless}}">
+            <a href="?plataforma=mercado_livre"
+                class="filter-tab {{#unless (eq activePlatformFilter 'shopee')}}{{#unless (eq activePlatformFilter 'amazon')}}active{{/unless}}{{/unless}}"
+                style="text-decoration: none; font-size: 1rem; padding: 0.6rem 1.5rem; {{#unless (eq activePlatformFilter 'shopee')}}{{#unless (eq activePlatformFilter 'amazon')}}background-color: #ffe600; border-color: #ffe600; box-shadow: 0 2px 4px rgba(255, 230, 0, 0.4); color: #2d3277; font-weight: 800;{{/unless}}{{/unless}}">
                 Mercado Livre
             </a>
-            <a href="?plataforma=shopee" 
-            class="filter-tab {{#if (eq activePlatformFilter 'shopee')}}active{{/if}}"
-            style="text-decoration: none; font-size: 1rem; padding: 0.6rem 1.5rem; {{#if (eq activePlatformFilter 'shopee')}}background-color: #ee4d2d; border-color: #ee4d2d; box-shadow: 0 2px 4px rgba(238, 77, 45, 0.3); color: #fff; font-weight: 800;{{/if}}">
+
+            <a href="?plataforma=shopee" class="filter-tab {{#if (eq activePlatformFilter 'shopee')}}active{{/if}}"
+                style="text-decoration: none; font-size: 1rem; padding: 0.6rem 1.5rem; {{#if (eq activePlatformFilter 'shopee')}}background-color: #ee4d2d; border-color: #ee4d2d; box-shadow: 0 2px 4px rgba(238, 77, 45, 0.3); color: #fff; font-weight: 800;{{/if}}">
                 Shopee
+            </a>
+
+            <a href="?plataforma=amazon" class="filter-tab {{#if (eq activePlatformFilter 'amazon')}}active{{/if}}"
+                style="text-decoration: none; font-size: 1rem; padding: 0.6rem 1.5rem; {{#if (eq activePlatformFilter 'amazon')}}background-color: #FF9900; border-color: #FF9900; box-shadow: 0 2px 4px rgba(255, 153, 0, 0.3); color: #fff; font-weight: 800;{{/if}}">
+                Amazon
             </a>
         </div>
 
         <div class="flex-mode-card" style="display: flex; justify-content: end;">
-        
+
             <div class="flex-switch-group" id="flexFilterContainer">
                 <span class="mode-label {{#unless activeFlexFilter}}active-normal{{/unless}}" id="labelNormal">
                     Entrega Normal
                 </span>
-                
+
                 <label class="switch-container" style="margin-left: 10px; margin-right: 10px;">
                     <input type="checkbox" id="flexFilter" {{#if activeFlexFilter}}checked{{/if}}>
                     <span class="slider"></span>
                 </label>
-                
+
                 <span class="mode-label {{#if activeFlexFilter}}active-flex{{/if}}" id="labelFlex">
                     <i class="icon-flash flex-icon"></i> Entrega Flex
                 </span>
             </div>
 
             <div class="date-range-wrapper">
-                
+
                 <div class="date-range-header">
                     <i class="icon-calendar text-muted"></i>
                     <span class="date-range-title">Período (Data Ação)</span>
                 </div>
-                
+
                 <div class="date-inputs-container">
                     <div class="date-input-group">
                         <label for="startDateInput">De</label>
-                        <input type="date" id="startDateInput" class="form-control system-date-input" value="{{activeStartDate}}">
+                        <input type="date" id="startDateInput" class="form-control system-date-input"
+                            value="{{activeStartDate}}">
                     </div>
-                    
+
                     <div class="date-input-group">
                         <label for="endDateInput">Até</label>
-                        <input type="date" id="endDateInput" class="form-control system-date-input" value="{{activeEndDate}}">
+                        <input type="date" id="endDateInput" class="form-control system-date-input"
+                            value="{{activeEndDate}}">
                     </div>
                 </div>
 
@@ -124,7 +131,7 @@
             <button class="filter-tab" data-filter-type="status" data-value="entregue">
                 Entregues <span class="badge" data-stat-counter="entregues">-</span>
             </button>
-            
+
             <button class="filter-tab" data-filter-type="status" data-value="venda_concretizada">
                 Venda Concretizada <span class="badge" data-stat-counter="venda_concretizada">-</span>
             </button>
@@ -132,7 +139,7 @@
             <button class="filter-tab" data-filter-type="status" data-value="devolucao_analise">
                 Dev. Análise <span class="badge" data-stat-counter="devolucao_analise">-</span>
             </button>
-            
+
             <button class="filter-tab" data-filter-type="status" data-value="devolucao_concluida">
                 Dev. Concluída <span class="badge" data-stat-counter="devolucao_concluida">-</span>
             </button>
@@ -192,18 +199,19 @@
     <div class="toolbar-content">
         <div class="company-filter-group" style="flex: 0 0 auto;">
             <select id="companySelect" class="form-control" style="min-width: 150px;">
-                <option value="todos" {{#if (eq activeCompanyFilter 'todos')}}selected{{/if}}>Todas Empresas</option>
-                
+                <option value="todos" {{#if (eq activeCompanyFilter 'todos' )}}selected{{/if}}>Todas Empresas</option>
+
                 {{#each companies}}
-                    <option value="{{this}}" {{#if (eq ../activeCompanyFilter this)}}selected{{/if}}>
-                        Empresa {{this}}
-                    </option>
+                <option value="{{this}}" {{#if (eq ../activeCompanyFilter this)}}selected{{/if}}>
+                    Empresa {{this}}
+                </option>
                 {{/each}}
             </select>
         </div>
 
         <div id="divergenceFilterWrapper" style="display: none; margin-left: 15px; align-self: center;">
-            <div class="custom-control custom-checkbox" title="Mostrar apenas pedidos que constam como Enviados no sistema, mas não no relatório da plataforma.">
+            <div class="custom-control custom-checkbox"
+                title="Mostrar apenas pedidos que constam como Enviados no sistema, mas não no relatório da plataforma.">
                 <input type="checkbox" class="custom-control-input" id="divergenceFilter">
                 <label class="custom-control-label text-danger" for="divergenceFilter">
                     <i class="icon-exclamation"></i> <strong>Não Enviados - Plataforma</strong>
@@ -213,17 +221,19 @@
 
         <div class="mediation-filter-group" style="margin-right: 10px;">
             <select id="mediationSelect" class="form-control" style="min-width: 140px; border-color: #e2e8f0;">
-                <option value="todos" {{#if (eq activeMediationFilter 'todos')}}selected{{/if}}>Todos Mediação</option>
-                <option value="sem_mediacao" {{#if (eq activeMediationFilter 'sem_mediacao')}}selected{{/if}}>Sem Mediação</option>
-                <option value="aberta" {{#if (eq activeMediationFilter 'aberta')}}selected{{/if}}>Em Aberto</option>
-                <option value="fechada" {{#if (eq activeMediationFilter 'fechada')}}selected{{/if}}>Fechada</option>
+                <option value="todos" {{#if (eq activeMediationFilter 'todos' )}}selected{{/if}}>Todos Mediação</option>
+                <option value="sem_mediacao" {{#if (eq activeMediationFilter 'sem_mediacao' )}}selected{{/if}}>Sem
+                    Mediação</option>
+                <option value="aberta" {{#if (eq activeMediationFilter 'aberta' )}}selected{{/if}}>Em Aberto</option>
+                <option value="fechada" {{#if (eq activeMediationFilter 'fechada' )}}selected{{/if}}>Fechada</option>
             </select>
         </div>
 
         <div class="search-group">
-            <input type="text" id="searchInput" placeholder="Buscar por pedido, comprador, NF ou SKU..." class="form-control" autocomplete="off">
+            <input type="text" id="searchInput" placeholder="Buscar por pedido, comprador, NF ou SKU..."
+                class="form-control" autocomplete="off">
         </div>
-        
+
         <div class="actions-group">
             <button id="toggleSelectionBtn" class="btn btn-outline btn-sm">
                 Selecionar Vários

@@ -557,6 +557,7 @@ const HubOrderService = {
                         // --- 3. Passar a plataforma e a data limite correta ---
                         let plataformaPrioridade = labelSalva ? labelSalva.plataforma : 'mercado_livre';
                         if (!labelSalva && numeroVenda.startsWith('SHP_')) plataformaPrioridade = 'shopee';
+                        else if (!labelSalva && numeroVenda.startsWith('AMZ_')) plataformaPrioridade = 'amazon';
 
                         let dataLimite = labelSalva ? labelSalva.data_envio_limite : null;
 
@@ -787,6 +788,15 @@ const HubOrderService = {
         const orderItemsData = Array.from(itemsMap.values());
 
         // --- PREPARAÇÃO DO CABEÇALHO ---
+        let finalDataEnvioLimite = dataEnvioLimiteEtiqueta ? new Date(dataEnvioLimiteEtiqueta) : safeDate(p.dataEnvioLimite);
+
+        if (plataformaOrigem === 'amazon' && p.dataLiberacaoExpedicao) {
+            const dataLib = new Date(p.dataLiberacaoExpedicao);
+            dataLib.setDate(dataLib.getDate() + 2); // Adiciona no máximo 2 dias à data da Citel
+            dataLib.setUTCHours(12, 0, 0, 0); // Força meio-dia UTC por segurança
+            finalDataEnvioLimite = dataLib;
+        }
+
         const orderData = {
             numero_venda: numeroVenda,
             data_venda: safeDate(p.dataHoraImportacao || p.dataEntrada),
@@ -807,7 +817,7 @@ const HubOrderService = {
             cep: enderecoObj.cep,
             pais: 'BR',
 
-            data_envio_limite: dataEnvioLimiteEtiqueta ? new Date(dataEnvioLimiteEtiqueta) : safeDate(p.dataEnvioLimite),
+            data_envio_limite: finalDataEnvioLimite,
             data_envio_disponivel: safeDate(p.dataEnvioDisponivel),
             data_previsao_entrega: safeDate(p.dataPrevisaoEntrega),
             data_coleta_agendada: safeDate(p.dataColetaAgendada),
@@ -824,11 +834,11 @@ const HubOrderService = {
         // --- PERSISTÊNCIA ---
         await MercadoLivreOrder.bulkUpsert([orderData]);
 
-        if (plataformaOrigem === 'shopee') {
+        if (plataformaOrigem === 'shopee' || plataformaOrigem === 'amazon') {
             await db.query(`UPDATE mercado_livre_orders 
                 SET data_envio_limite = $1
                 WHERE numero_venda = $2
-                `, [new Date(dataEnvioLimiteEtiqueta), numeroVenda]);
+                `, [finalDataEnvioLimite, numeroVenda]);
         }
 
         const savedOrders = await MercadoLivreOrder.findByNumeroVendas([numeroVenda]);
@@ -862,6 +872,7 @@ const HubOrderService = {
             SELECT numero_venda, status_bucket, dev_historico, medicao, frete_envio, data_venda
             FROM mercado_livre_orders 
             WHERE status_bucket NOT IN ('cancelado', 'entregue', 'devolucao_concluida', 'nao_entregue')
+              AND plataforma = 'mercado_livre'
         `);
 
         if (activeOrders.length === 0) return;

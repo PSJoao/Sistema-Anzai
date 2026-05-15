@@ -22,17 +22,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: 'Selecionar Plataforma',
                 allowOutsideClick: false,
                 body: `
-                    <div class="text-center pb-3 pt-2">
-                        <p class="mb-4">Qual plataforma você irá separar?</p>
-                        <div style="display: flex; justify-content: center; gap: 15px;">
-                            <button type="button" class="btn btn-primary btn-lg" onclick="const params = new URLSearchParams(window.location.search); params.set('plataforma', 'mercado_livre'); window.location.search = params.toString();" style="min-width: 150px;">
-                                Mercado Livre
+                    <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="const params = new URLSearchParams(window.location.search); params.set('plataforma', 'mercado_livre'); window.location.search = params.toString();" style="flex: 1; min-width: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background-color: #FFE600; color: #333; border: none; font-weight: bold; height: 80px;">
+                                <i class="icon-box" style="font-size: 24px;"></i> Mercado Livre
                             </button>
-                            <button type="button" class="btn btn-primary btn-lg" onclick="const params = new URLSearchParams(window.location.search); params.set('plataforma', 'shopee'); window.location.search = params.toString();" style="min-width: 150px;">
-                                Shopee
+                            <button type="button" class="btn btn-primary btn-lg" onclick="const params = new URLSearchParams(window.location.search); params.set('plataforma', 'shopee'); window.location.search = params.toString();" style="flex: 1; min-width: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background-color: #EE4D2D; color: #FFF; border: none; font-weight: bold; height: 80px;">
+                                <i class="icon-shopping-bag" style="font-size: 24px;"></i> Shopee
+                            </button>
+                            <button type="button" class="btn btn-primary btn-lg" onclick="const params = new URLSearchParams(window.location.search); params.set('plataforma', 'amazon'); window.location.search = params.toString();" style="flex: 1; min-width: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background-color: #FF9900; color: #FFF; border: none; font-weight: bold; height: 80px;">
+                                <i class="icon-shopping-cart" style="font-size: 24px;"></i> Amazon
                             </button>
                         </div>
-                    </div>
                 `,
                 footer: '', // Vazio para não mostrar botões padrão
                 allowOutsideClick: false // Impede fechar clicando fora
@@ -42,14 +42,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Adiciona a tag (badge) no título para o operador saber onde está
         const headerTitle = document.querySelector('.page-header h1');
-        if (headerTitle) {
-            const badgeLabel = currentPlatform === 'shopee' ? 'Shopee' : 'Mercado Livre';
-            const badgeClass = currentPlatform === 'shopee' ? 'bg-warning text-dark' : 'bg-primary';
-            if (badgeLabel === 'Mercado Livre') {
-                headerTitle.innerHTML += ` <span class="badge ${badgeClass}" style="vertical-align: middle; color: yellow;">${badgeLabel}</span>`;
-            } else if (badgeLabel === 'Shopee') {
-                headerTitle.innerHTML += ` <span class="badge ${badgeClass}" style="vertical-align: middle; color: red;">${badgeLabel}</span>`;
+        if (headerTitle && currentPlatform && currentPlatform !== 'todos') {
+            let badgeHtml = '';
+            if (currentPlatform === 'mercado_livre') {
+                badgeHtml = `<span class="badge" style="background-color: #FFE600; color: #333; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; border: 1px solid rgba(0,0,0,0.1); vertical-align: middle; margin-left: 10px;">Mercado Livre</span>`;
+            } else if (currentPlatform === 'shopee') {
+                badgeHtml = `<span class="badge" style="background-color: #EE4D2D; color: #FFF; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; border: 1px solid rgba(0,0,0,0.1); vertical-align: middle; margin-left: 10px;">Shopee</span>`;
+            } else if (currentPlatform === 'amazon') {
+                badgeHtml = `<span class="badge" style="background-color: #FF9900; color: #FFF; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; border: 1px solid rgba(0,0,0,0.1); vertical-align: middle; margin-left: 10px;">Amazon</span>`;
+            } else {
+                badgeHtml = `<span class="badge" style="background-color: #8E44AD; color: #FFF; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; border: 1px solid rgba(0,0,0,0.1); vertical-align: middle; margin-left: 10px; text-transform: capitalize;">${currentPlatform.replace('_', ' ')}</span>`;
             }
+            headerTitle.innerHTML += badgeHtml;
         }
         // -----------------------------------------------
 
@@ -329,17 +333,31 @@ document.addEventListener('DOMContentLoaded', () => {
             if (orders.length === 0) {
                 ordersHtml = '<li class="order-list-item text-muted text-center p-3">Nenhum pedido pendente.</li>';
             } else {
-                ordersHtml = orders.map(order => `
+                ordersHtml = orders.map(order => {
+                    // Decide icon/badge da plataforma
+                    let platformBadge = '';
+                    if (order.plataforma === 'mercado_livre') {
+                        platformBadge = '<span class="badge" style="background-color: #FFE600; color: #333; padding: 2px 4px; font-size: 0.65rem; margin-right: 5px;">ML</span>';
+                    } else if (order.plataforma === 'shopee') {
+                        platformBadge = '<span class="badge" style="background-color: #EE4D2D; color: #FFF; padding: 2px 4px; font-size: 0.65rem; margin-right: 5px;">SHP</span>';
+                    } else if (order.plataforma === 'amazon') {
+                        platformBadge = '<span class="badge" style="background-color: #FF9900; color: #FFF; padding: 2px 4px; font-size: 0.65rem; margin-right: 5px;">AMZ</span>';
+                    } else if (order.plataforma) {
+                        platformBadge = `<span class="badge" style="background-color: #8E44AD; color: #FFF; padding: 2px 4px; font-size: 0.65rem; margin-right: 5px; text-transform: capitalize;">${order.plataforma}</span>`;
+                    }
+
+                    return `
                     <li class="order-list-item">
                         <div class="order-list-header">
-                            <span>#${order.numero_venda}</span>
+                            <span>${platformBadge}#${order.numero_venda}</span>
                             <span class="badge-qty">${order.qty_needed} un</span>
                         </div>
                         <div class="order-list-buyer" title="${order.comprador || ''}">
                             👤 ${order.comprador || 'Consumidor Final'}
                         </div>
                     </li>
-                `).join('');
+                    `;
+                }).join('');
             }
             // ----------------------------------------
 

@@ -1,3 +1,89 @@
+<style>
+    .config-panel {
+        background-color: #f1f3f5;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+        display: none;
+        /* Escondido por padrão */
+    }
+
+    .config-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 10px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .config-row:last-child {
+        border-bottom: none;
+    }
+
+    .config-label {
+        min-width: 100px;
+        font-weight: 600;
+    }
+
+    .time-input {
+        width: 130px;
+    }
+
+    .btn-config-toggle {
+        background: none;
+        border: none;
+        color: #2d3277;
+        font-size: 0.9rem;
+        text-decoration: underline;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    @media (max-width: 768px) {
+        .config-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .time-input {
+            width: auto;
+            flex: 1;
+        }
+
+        .cfg-time-group {
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .cfg-time-group>span {
+            margin-top: 5px;
+        }
+
+        .config-actions {
+            width: 100%;
+        }
+
+        .config-actions>button {
+            flex: 1;
+        }
+    }
+
+    /* Desktop adjustments */
+    @media (min-width: 769px) {
+        .config-actions {
+            margin-left: auto;
+            width: auto;
+        }
+        
+        .form-group-filter {
+            flex: 0 1 auto;
+        }
+    }
+</style>
+
 <div class="page-header">
     <div>
         <h1>Separação de Produtos</h1>
@@ -7,139 +93,308 @@
 
 <div class="card mb-4" style="margin-bottom: 20px; ">
     <div class="card-body">
-        <form id="separationFiltersForm" method="GET" action="/separacao" style="display: flex; gap: 50px; align-items: center; flex-wrap: wrap;">
-            
-            <div class="form-group mb-0">
-                <label for="companySelect" style="font-weight: bold; display: block; margin-bottom: 5px;">Filtrar Loja:</label>
-                <select name="company" id="companySelect" class="form-control" style="min-width: 150px;">
-                    <option value="todos" {{#if (eq activeCompany 'todos')}}selected{{/if}}>Todas as Lojas</option>
-                    {{#each companies}}
-                        <option value="{{this}}" {{#if (eq ../activeCompany this)}}selected{{/if}}>Loja {{this}}</option>
-                    {{/each}}
-                </select>
-            </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <form id="separationFiltersForm" method="GET" action="/separacao"
+                style="display: flex; gap: 30px; align-items: flex-end; flex-wrap: wrap;">
 
-            <div class="form-group mb-0">
-                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Filtrar por prazo: </label>
-                <div style="display: flex; gap: 15px; align-items: center; height: 38px;">
-                    <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; margin: 0;">
-                        <input type="checkbox" name="deadlines" value="atrasado" {{#if (includes activeDeadlines 'atrasado')}}checked{{/if}}>
-                        <span class="text-primary font-weight-bold">Atrasados</span>
-                    </label>
-                    
-                    <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; margin: 0;">
-                        <input type="checkbox" name="deadlines" value="hoje" {{#if (includes activeDeadlines 'hoje')}}checked{{/if}}>
-                        <span class="text-primary font-weight-bold">Para Hoje</span>
-                    </label>
-                    
-                    <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; margin: 0;">
-                        <input type="checkbox" name="deadlines" value="futuro" {{#if (includes activeDeadlines 'futuro')}}checked{{/if}}>
-                        <span class="text-muted">Futuros</span>
-                    </label>
+                <div class="form-group mb-0 form-group-filter" style="min-width: 200px;">
+                    <label for="companySelect" style="font-weight: bold; display: block; margin-bottom: 5px;">Filtrar
+                        Loja:</label>
+                    <select name="company" id="companySelect" class="form-control" style="width: 100%;">
+                        <option value="todos" {{#if (eq activeCompany 'todos' )}}selected{{/if}}>Todas as Lojas</option>
+                        {{#each companies}}
+                        <option value="{{this}}" {{#if (eq ../activeCompany this)}}selected{{/if}}>Loja {{this}}
+                        </option>
+                        {{/each}}
+                    </select>
                 </div>
-            </div>
-            <button type="submit" class="btn btn-primary">
+
+                <div class="form-group mb-0 form-group-filter" style="min-width: 250px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Filtrar por prazo: </label>
+                    <div style="display: flex; gap: 15px; align-items: center; min-height: 38px; flex-wrap: wrap;">
+                        {{#if filterConfigs.atrasado.isActive}}
+                        <label style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="deadlines" value="atrasado" {{#if (includes
+                                activeDeadlines 'atrasado' )}}checked{{/if}}> Atrasados
+                        </label>
+                        {{/if}}
+
+                        {{#if filterConfigs.hoje.isActive}}
+                        <label style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="deadlines" value="hoje" {{#if (includes activeDeadlines 'hoje'
+                                )}}checked{{/if}}> Para Hoje
+                        </label>
+                        {{/if}}
+
+                        {{#if filterConfigs.futuro.isActive}}
+                        <label style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="deadlines" value="futuro" {{#if (includes
+                                activeDeadlines 'futuro' )}}checked{{/if}}> Futuros
+                        </label>
+                        {{/if}}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
                 Aplicar Filtros
+                </button>
+            </form>
+
+            {{#if user.liberar_conf}}
+            <button type="button" class="btn-config-toggle"
+                onclick="toggleConfigPanel()">
+                <i class="icon-settings"></i> Configurar Filtros
             </button>
-        </form>
+            {{/if}}
+        </div>
+
+        {{#if user.liberar_conf}}
+        <div id="configPanel" class="config-panel">
+            <h5 style="margin-bottom: 15px; border-bottom: 2px solid #2d3277; padding-bottom: 5px;">Configurações de
+                Visibilidade</h5>
+
+            {{#each filterConfigs}}
+            <div class="config-row" data-filter="{{@key}}">
+                <span class="config-label" style="text-transform: capitalize;">{{@key}}:</span>
+
+                <label style="margin: 0; display: flex; align-items: center; gap: 5px;">
+                    <input type="checkbox" class="cfg-visible" {{#if this.is_visible}}checked{{/if}}> Permanente
+                </label>
+
+                <div class="cfg-time-group"
+                    style="display: {{#if this.is_visible}}none{{else}}flex{{/if}}; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span>Aparecer das:</span>
+                    <input type="time" class="form-control time-input cfg-start" value="{{this.start_time}}">
+                    <span>até:</span>
+                    <input type="time" class="form-control time-input cfg-end" value="{{this.end_time}}">
+                </div>
+
+                <!-- Auto-saved natively, no buttons here -->
+            </div>
+            {{/each}}
+        </div>
+        {{/if}}
     </div>
 </div>
 
 {{#if error}}
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="form-error text-danger">{{error}}</div>
-        </div>
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="form-error text-danger">{{error}}</div>
     </div>
+</div>
 {{/if}}
 
 {{#if departments.length}}
-    <div class="separation-department-grid">
-        {{#each departments}}
-            <article class="card separation-department-card">
-                <div class="card-header" style="display: flex; flex-direction: column; gap: 8px;">
-                    <h3 style="margin: 0;">{{lookup ../departmentLabels this.cod_departamento}}</h3>
-                    
-                    {{!-- Renderização Condicional das Flags de Plataforma --}}
-                    {{#if this.plataformas}}
-                        <div class="platform-flags" style="display: flex; gap: 6px; flex-wrap: wrap;">
-                            {{#each this.plataformas}}
-                                {{#if (eq @key 'mercado_livre')}}
-                                    <span class="badge" style="background-color: #FFE600; color: #333; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(0,0,0,0.1);">ML</span>
-                                {{else if (eq @key 'shopee')}}
-                                    <span class="badge" style="background-color: #EE4D2D; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(0,0,0,0.1);">Shopee</span>
-                                {{else}}
-                                    {{!-- Fallback para futuras plataformas --}}
-                                    <span class="badge" style="background-color: #8E44AD; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">{{@key}}</span>
-                                {{/if}}
-                            {{/each}}
-                        </div>
-                    {{/if}}
-                </div>
-                
-                <div class="card-body">
-                    <div class="stat-row" style="margin-bottom: 10px;">
-                        <div class="text-muted small">Produtos Pendentes: {{this.produtos_com_pendencia}}</div>
-                        <div class="text-muted small">Unidades Pendentes: {{this.unidades_pendentes}}</div>
-                    </div>
+<div class="separation-department-grid">
+    {{#each departments}}
+    <article class="card separation-department-card">
+        <div class="card-header" style="display: flex; flex-direction: column; gap: 8px;">
+            <h3 style="margin: 0;">{{lookup ../departmentLabels this.cod_departamento}}</h3>
 
-                    {{#if this.plataformas}}
-                        <div class="department-stats" style="margin-top: 15px; font-size: 0.9rem;">
-                            <strong style="display: block; margin-bottom: 10px; color: #555;">Pendências por Plataforma:</strong>
-                            
-                            {{#each this.plataformas}}
-                                <div style="margin-bottom: 8px; padding: 8px 12px; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid {{#if (eq @key 'mercado_livre')}}#FFE600{{else if (eq @key 'shopee')}}#EE4D2D{{else}}#8E44AD{{/if}};">
-                                    
-                                    {{!-- Título da Plataforma --}}
-                                    <strong style="display: block; margin-bottom: 5px; color: #333; text-transform: capitalize;">
-                                        {{#if (eq @key 'mercado_livre')}}Mercado Livre{{else}}{{@key}}{{/if}}
-                                    </strong>
-                                    
-                                    {{!-- Lista de Lojas dentro desta Plataforma --}}
-                                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
-                                        {{#each this}}
-                                            <li style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ddd; padding-bottom: 2px;">
-                                                <span>Loja {{@key}}</span>
-                                                <strong>Un. Pend.: {{this}}</strong>
-                                            </li>
-                                        {{/each}}
-                                    </ul>
-                                </div>
-                            {{/each}}
-                            
-                        </div>
-                    {{/if}}
-                </div>
-                
-                <footer class="card-footer" style="margin-top: 10px; text-align: center;">
-                    <a href="/separacao/departamento/{{this.cod_departamento}}" 
-                       class="btn btn-primary btn-block btn-department-link">
-                       Iniciar Separação
-                    </a>
-                </footer>
-            </article>
-        {{/each}}
-    </div>
-{{else}}
-    <div class="empty-state card">
-        <div class="card-body text-center py-5">
-            <p class="text-muted lead">Nenhum departamento possui produtos pendentes com os filtros selecionados.</p>
-            <a href="/separacao" class="btn btn-outline mt-3">Ver Tudo</a>
+            {{!-- Renderização Condicional das Flags de Plataforma --}}
+            {{#if this.plataformas}}
+            <div class="platform-flags" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                {{#each this.plataformas}}
+                {{#if (eq @key 'mercado_livre')}}
+                <span class="badge"
+                    style="background-color: #FFE600; color: #333; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(0,0,0,0.1);">ML</span>
+                {{else if (eq @key 'shopee')}}
+                <span class="badge"
+                    style="background-color: #EE4D2D; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(0,0,0,0.1);">Shopee</span>
+                {{else if (eq @key 'amazon')}}
+                <span class="badge"
+                    style="background-color: #FF9900; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(0,0,0,0.1);">Amazon</span>
+                {{else}}
+                {{!-- Fallback para futuras plataformas --}}
+                <span class="badge"
+                    style="background-color: #8E44AD; color: #FFF; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">{{@key}}</span>
+                {{/if}}
+                {{/each}}
+            </div>
+            {{/if}}
         </div>
+
+        <div class="card-body">
+            <div class="stat-row" style="margin-bottom: 10px;">
+                <div class="text-muted small">Produtos Pendentes: {{this.produtos_com_pendencia}}</div>
+                <div class="text-muted small">Unidades Pendentes: {{this.unidades_pendentes}}</div>
+            </div>
+
+            {{#if this.plataformas}}
+            <div class="department-stats" style="margin-top: 15px; font-size: 0.9rem;">
+                <strong style="display: block; margin-bottom: 10px; color: #555;">Pendências por Plataforma:</strong>
+
+                {{#each this.plataformas}}
+                <div
+                    style="margin-bottom: 8px; padding: 8px 12px; background-color: #f8f9fa; border-radius: 6px; border-left: 4px solid {{#if (eq @key 'mercado_livre')}}#FFE600{{else if (eq @key 'shopee')}}#EE4D2D{{else if (eq @key 'amazon')}}#FF9900{{else}}#8E44AD{{/if}};">
+
+                    {{!-- Título da Plataforma --}}
+                    <strong style="display: block; margin-bottom: 5px; color: #333; text-transform: capitalize;">
+                        {{#if (eq @key 'mercado_livre')}}Mercado Livre{{else if (eq @key
+                        'amazon')}}Amazon{{else}}{{@key}}{{/if}}
+                    </strong>
+
+                    {{!-- Lista de Lojas dentro desta Plataforma --}}
+                    <ul
+                        style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
+                        {{#each this}}
+                        <li
+                            style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ddd; padding-bottom: 2px;">
+                            <span>Loja {{@key}}</span>
+                            <strong>Un. Pend.: {{this}}</strong>
+                        </li>
+                        {{/each}}
+                    </ul>
+                </div>
+                {{/each}}
+
+            </div>
+            {{/if}}
+        </div>
+
+        <footer class="card-footer" style="margin-top: 10px; text-align: center;">
+            <a href="/separacao/departamento/{{this.cod_departamento}}"
+                class="btn btn-primary btn-block btn-department-link">
+                Iniciar Separação
+            </a>
+        </footer>
+    </article>
+    {{/each}}
+</div>
+{{else}}
+<div class="empty-state card">
+    <div class="card-body text-center py-5">
+        <p class="text-muted lead">Nenhum departamento possui produtos pendentes com os filtros selecionados.</p>
+        <a href="/separacao" class="btn btn-outline mt-3">Ver Tudo</a>
     </div>
+</div>
 {{/if}}
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Pega os parâmetros da URL atual (ex: ?company=001&deadlines=atrasado)
-        const currentParams = window.location.search;
+    {{#if user.liberar_conf}}
+    let configChangedWhileOpen = false;
+    let initialConfigStr = null; // Elevado para ser acessado pelo toggle
+
+    function toggleConfigPanel() {
+        const panel = document.getElementById('configPanel');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+            if (configChangedWhileOpen) window.location.reload();
+        } else {
+            panel.style.display = 'block';
+            configChangedWhileOpen = false;
+        }
+    }
+
+    async function autoSaveConfig(row) {
+        if (row.dataset.isSaving === 'true') return;
+        row.dataset.isSaving = 'true';
+
+        const filterKey = row.dataset.filter;
+        const isVisible = row.querySelector('.cfg-visible').checked;
+        const startInput = row.querySelector('.cfg-start');
+        const endInput = row.querySelector('.cfg-end');
         
+        let startTime = startInput.value;
+        let endTime = endInput.value;
+
+        if (!isVisible && (!startTime || !endTime)) {
+            startTime = '12:00';
+            endTime = '19:00';
+            startInput.value = startTime;
+            endInput.value = endTime;
+        }
+
+        const data = { filterKey, isVisible, startTime, endTime };
+
+        try {
+            const res = await fetch('/separacao/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                alert(err.message || 'Erro ao salvar configuração.');
+            } else {
+                configChangedWhileOpen = true;
+                
+                // Atualiza o state local para impedir reload imediato via polling
+                const updatedConfigRes = await fetch('/separacao/api/config');
+                if (updatedConfigRes.ok) {
+                    initialConfigStr = await updatedConfigRes.text();
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            row.dataset.isSaving = 'false';
+        }
+    }
+    {{/if}}
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const currentParams = window.location.search;
         if (currentParams) {
             const links = document.querySelectorAll('.btn-department-link');
             links.forEach(link => {
-                // Anexa os parâmetros ao link existente
                 link.href += currentParams;
             });
         }
+
+        {{#if user.liberar_conf}}
+        // Polling para refletir as configurações globalmente sem botão de salvar
+        async function checkConfigChanges() {
+            try {
+                const res = await fetch('/separacao/api/config');
+                if (res.ok) {
+                    const configStr = await res.text();
+                    if (initialConfigStr === null) {
+                        initialConfigStr = configStr;
+                    } else if (initialConfigStr !== configStr) {
+                        const panel = document.getElementById('configPanel');
+                        if (!panel || panel.style.display !== 'block') {
+                            window.location.reload();
+                        } else {
+                            // Outro usuário modificou e este está com painel aberto.
+                            configChangedWhileOpen = true;
+                            initialConfigStr = configStr;
+                        }
+                    }
+                }
+            } catch (e) {}
+        }
+        
+        setInterval(checkConfigChanges, 3000);
+        checkConfigChanges();
+        {{/if}}
+
+        {{#if user.liberar_conf}}
+        document.querySelectorAll('.cfg-visible').forEach(checkbox => {
+            checkbox.addEventListener('change', async (e) => {
+                const row = e.target.closest('.config-row');
+                const timeGroup = row.querySelector('.cfg-time-group');
+                if (timeGroup) {
+                    timeGroup.style.display = e.target.checked ? 'none' : 'flex';
+                }
+                await autoSaveConfig(row);
+            });
+        });
+        
+        // Auto-save on blur or enter key for time inputs
+        document.querySelectorAll('.cfg-start, .cfg-end').forEach(input => {
+            input.addEventListener('blur', async (e) => {
+                const row = e.target.closest('.config-row');
+                await autoSaveConfig(row);
+            });
+            input.addEventListener('keyup', async (e) => {
+                if (e.key === 'Enter') {
+                    e.target.blur(); // Triggers the blur event which auto saves
+                }
+            });
+        });
+        {{/if}}
     });
 </script>

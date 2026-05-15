@@ -16,5 +16,9 @@ router.post('/api/reset', protectRoute, SeparationController.resetSeparation);
 router.get('/api/search', protectRoute, SeparationController.globalSearch);
 router.post('/api/search-acquire', protectRoute, SeparationController.searchAndAcquire);
 
+// Rotas de Configuração Administrativa (Visibilidade de Filtros)
+router.post('/api/config', protectRoute, SeparationController.api_updateFilterConfig);
+router.get('/api/config', protectRoute, SeparationController.api_getFilterConfig);
+
 module.exports = router;
 

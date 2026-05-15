@@ -23,17 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: 'Selecionar Plataforma',
                 allowOutsideClick: false,
                 body: `
-                    <div class="text-center pb-3 pt-2">
-                        <p class="mb-4">Qual plataforma você irá empacotar?</p>
-                        <div style="display: flex; justify-content: center; gap: 15px;">
-                            <button type="button" class="btn btn-primary btn-lg" onclick="window.location.href='?plataforma=mercado_livre'" style="min-width: 150px;">
+                    <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="window.location.href='?plataforma=mercado_livre'" style="min-width: 150px; background-color: #FFE600; color: #333; border: none; font-weight: bold;">
                                 Mercado Livre
                             </button>
-                            <button type="button" class="btn btn-primary btn-lg" onclick="window.location.href='?plataforma=shopee'" style="min-width: 150px;">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="window.location.href='?plataforma=shopee'" style="min-width: 150px; background-color: #EE4D2D; color: #FFF; border: none; font-weight: bold;">
                                 Shopee
                             </button>
+                            <button type="button" class="btn btn-primary btn-lg" onclick="window.location.href='?plataforma=amazon'" style="min-width: 150px; background-color: #FF9900; color: #FFF; border: none; font-weight: bold;">
+                                Amazon
+                            </button>
                         </div>
-                    </div>
                 `,
                 footer: '', // Vazio para não mostrar botões padrão
                 allowOutsideClick: false // Impede fechar clicando fora
@@ -41,16 +41,24 @@ document.addEventListener('DOMContentLoaded', () => {
             return; // Interrompe a execução do script até a página recarregar
         }
 
-        // Opcional: Adiciona a tag (badge) no título para o operador saber onde está
+        // Adiciona a tag (badge) no título para o operador saber onde está
         const headerTitle = document.querySelector('.page-header h1');
         if (headerTitle) {
-            const badgeLabel = currentPlatform === 'shopee' ? 'Shopee' : 'Mercado Livre';
-            const badgeClass = currentPlatform === 'shopee' ? 'bg-warning text-dark' : 'bg-primary';
-            if (badgeLabel === 'Mercado Livre') {
-                headerTitle.innerHTML += ` <span class="badge ${badgeClass}" style="vertical-align: middle; color: yellow;">${badgeLabel}</span>`;
-            } else if (badgeLabel === 'Shopee') {
-                headerTitle.innerHTML += ` <span class="badge ${badgeClass}" style="vertical-align: middle; color: red;">${badgeLabel}</span>`;
+            let badgeLabel = 'Mercado Livre';
+            let badgeColor = '#FFE600';
+            let textColor = '#333';
+
+            if (currentPlatform === 'shopee') {
+                badgeLabel = 'Shopee';
+                badgeColor = '#EE4D2D';
+                textColor = '#FFF';
+            } else if (currentPlatform === 'amazon') {
+                badgeLabel = 'Amazon';
+                badgeColor = '#FF9900';
+                textColor = '#FFF';
             }
+
+            headerTitle.innerHTML += ` <span class="badge" style="background-color: ${badgeColor}; color: ${textColor}; vertical-align: middle; padding: 5px 10px; border-radius: 6px; font-size: 0.9rem; margin-left: 10px;">${badgeLabel}</span>`;
         }
 
         // Templates
