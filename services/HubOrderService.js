@@ -3,6 +3,7 @@
 const CitelGateway = require('./CitelGateway');
 const axios = require('axios');
 const MercadoLivreOrder = require('../models/MercadoLivreOrder');
+const OrderHistory = require('../models/OrderHistory');
 const OrderItem = require('../models/OrderItem');
 const db = require('../config/database');
 const syncPackid = require('../sync-packid');

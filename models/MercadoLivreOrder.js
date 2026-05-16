@@ -584,6 +584,22 @@ const MercadoLivreOrder = {
                     WHERE oi.order_id = mlo.id AND p.cod_imagem IS NOT NULL AND p.cod_imagem != ''
                 ) as codigos_imagens,
 
+                -- NOVA SUBQUERY: HISTÓRICO DE EXPEDIÇÃO
+                (
+                    SELECT JSON_AGG(
+                        JSON_BUILD_OBJECT(
+                            'status', oh.status,
+                            'usuario', oh.usuario,
+                            'data_hora', TO_CHAR(oh.created_at, 'DD/MM/YYYY - HH24:MI:SS')
+                        ) ORDER BY oh.created_at ASC
+                    )
+                    FROM order_history oh
+                    WHERE oh.order_id = mlo.id
+                      -- Filtramos apenas os 4 status principais conforme o seu pedido
+                      -- Nota: 'em_romaneio' equivale ao 'Empacotamento/Embalado' no fluxo atual do Anzai
+                      AND oh.status IN ('pendente', 'separado', 'em_romaneio', 'enviado')
+                ) as historico_expedicao,
+
                 COUNT(*) OVER() as total_count
             FROM ${TABLE_NAME} mlo LEFT JOIN shipping_batches sb ON mlo.shipping_batch_id = sb.id 
             ${whereSql}
